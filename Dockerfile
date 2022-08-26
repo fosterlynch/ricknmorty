@@ -2,9 +2,6 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
-# Temporarily granting root access
-USER root
-
 RUN apt-get update && \
     apt-get install -y \
     software-properties-common \
@@ -16,8 +13,10 @@ RUN apt-get update && \
     python3.10-distutils \
     python3-pip
 
+RUN pip3 install requests beautifulsoup4 python-dotenv
 RUN pip3 install notebook mortgage matplotlib
 
-COPY houseprices.ipynb ./
-
-
+WORKDIR ./explore
+COPY pull_data.py ./
+COPY mortgage.ipynb ./
+COPY .env ./
