@@ -1,3 +1,16 @@
+a:
+	docker container stop mortgage
+	
+	docker container rm mortgage
+	
+	docker build --file=Dockerfile --tag mortgage .
+	
+	docker run -it -p 8888:8888 \
+	--name=mortgage \
+	mortgage \
+	jupyter notebook
+	#	python3 pull_data.py
+
 build:
 	docker build --file=Dockerfile \
 	--tag mortgage .

@@ -17,6 +17,6 @@ RUN pip3 install requests beautifulsoup4 python-dotenv
 RUN pip3 install notebook mortgage matplotlib
 
 WORKDIR ./explore
-COPY pull_data.py ./
-COPY mortgage.ipynb ./
 COPY .env ./
+COPY mortgage.ipynb ./
+COPY pull_data.py ./
