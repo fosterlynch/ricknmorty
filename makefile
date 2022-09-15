@@ -8,8 +8,7 @@ a:
 	docker run -it -p 8888:8888 \
 	--name=mortgage \
 	mortgage \
-	jupyter notebook
-	#	python3 pull_data.py
+	jupyter notebook --allow-root --ip 0.0.0.0 --port 8888
 
 build:
 	docker build --file=Dockerfile \
@@ -23,7 +22,7 @@ run:
 	# jupyter notebook --ip 0.0.0.0 --port=8888 --no-browser --allow-root
 
 save:
-	docker cp <container-id>:explore/Untitled.ipynb ./Untitled.ipynb
+	docker cp cab98135f52d:explore/mortgage.ipynb ./mortgage.ipynb
 
 stop:
 	docker container stop mortgage
