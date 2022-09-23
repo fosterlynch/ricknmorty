@@ -8,7 +8,8 @@ a:
 	docker run -it -p 8888:8888 \
 	--name=mortgage \
 	mortgage \
-	jupyter notebook --allow-root --ip 0.0.0.0 --port 8888
+	python3 gemm.py
+	# jupyter notebook --allow-root --ip 0.0.0.0 --port 8888
 
 build:
 	docker build --file=Dockerfile \

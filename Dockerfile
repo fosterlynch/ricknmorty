@@ -20,3 +20,5 @@ WORKDIR ./explore
 COPY .env ./
 COPY mortgage.ipynb ./
 COPY pull_data.py ./
+COPY gemm.py ./
+COPY realestate.py ./
