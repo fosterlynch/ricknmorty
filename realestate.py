@@ -1,6 +1,6 @@
 from typing import List
 from mortgage import Loan
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import matplotlib.pyplot as plt
 
 @dataclass
@@ -26,21 +26,22 @@ class webvalues:
     insurance:int=100
     hoa:int = 0
     lawn:int = 50
-    rentroll:List[int] = [0]
-    num_units:int = 1
+    rentroll:List = field(default_factory=[0])
     property_type:str = "single"
+    investment_type:str = "primary_residence"
     interest_rate:float = .05
     num_months:int = 360
 
     def __post_init__(self):
         assert self.property_type in ["single", "multi"]
+        assert self.investment_type in ["primary_residence", "investment_only"]
         
 class RealEstate(percents, utilities, webvalues):
     def __init__(self, webvalues=webvalues, utilities=utilities, percents=percents):
         '''Calculate monthly expenses'''
         
         self._property_type = webvalues.property_type
-        self._rental_income = sum(webvalues.rental_income)
+        self.rentroll = webvalues.rentroll
         self._list_price = webvalues.list_price
         
         self.taxes = webvalues.taxes
@@ -48,25 +49,34 @@ class RealEstate(percents, utilities, webvalues):
         self.hoa = webvalues.hoa
         self.lawn = webvalues.lawn
         
-        self.num_units = webvalues.num_units
+        self._rental_income = sum(self.rentroll)
 
         self.property_type = self._property_type
         self.rental_income = self._rental_income
         self.list_price = self._list_price
         
-        self.set_expenses()
+        self.water_sewer = utilities.water_sewer
+        self.garbage = utilities.garbage
+        self.electric = utilities.electric
+        self.gas = utilities.gas
 
-    def compute_payment(self):
-        self.down_payment = self.list_price * self.down_payment_pct
+        self.set_expenses(webvalues.investment_type)
+
+    def compute_payment(self, down_payment_pct):
+        self.down_payment = self.list_price * down_payment_pct
         self.principal_amount = self.list_price - self.down_payment
         self.loan = Loan(principal=self.principal_amount, interest=0.05, term=30)
         self.monthly_payment = float(self.loan.monthly_payment)
     
     
-    def set_expenses(self):
-        if self.property_type == "multi":
-            self.down_payment_pct = 0.2
-            self.compute_payment()
+    def set_expenses(self, investment_type):
+        try:
+            assert investment_type in ["investment", "primary_residence"]
+        except AssertionError:
+            print(f"investment type: {investment_type} not in ['investment','primary_residence']")
+
+        if investment_type == "investment":
+            self.compute_payment(down_payment_pct = 0.2)
             
             try:
                 assert self.rental_income != 0
@@ -79,27 +89,32 @@ class RealEstate(percents, utilities, webvalues):
             self.misc_expenses = self.rental_income * percents.misc_ex
             self.vacancy = self.rental_income * percents.vacancy
         
-        
             self.water_sewer = 0
             self.garbage = 0
             self.electric = 0
             self.gas = 0
+
             
-        else:
-            # personal property, variable expences will be a function of mortgage
-            self.down_payment_pct = 0.03
-            self.compute_payment()
-            
-            self.capex = self.monthly_payment * percents.capex 
-            self.mgmt_fees = 0
-            self.misc_expenses = self.monthly_payment * percents.misc_ex
-            self.repairs = self.monthly_payment * percents.repairs
-            self.vacancy = 0
-            
-            self.water_sewer = utilities.water_sewer
-            self.garbage = utilities.garbage
-            self.electric = utilities.electric
-            self.gas = utilities.gas
+        if investment_type == "primary_residence":
+             # personal property, variable expences will be a function of mortgage
+            self.compute_payment(down_payment_pct=0.03)
+
+            if self.property_type == "single":                
+                self.capex = self.monthly_payment * percents.capex 
+                self.mgmt_fees = 0
+                self.misc_expenses = self.monthly_payment * percents.misc_ex
+                self.repairs = self.monthly_payment * percents.repairs
+                self.vacancy = 0
+                
+
+            if self.property_type == "multi":
+                self.effective_rent = min(self.rentroll)
+                self.rental_income = sum(self.rentroll) - self.effective_rent
+                self.capex = self.rental_income * percents.capex
+                self.misc_expenses = self.rental_income * percents.misc_ex
+                self.repairs = self.rental_income * percents.repairs
+                self.mgmt_fees = self.rental_income * percents.mgmt
+                self.vacancy = self.rental_income * percents.vacancy
 
             
     def _expenses(self):
@@ -125,18 +140,11 @@ class RealEstate(percents, utilities, webvalues):
     def cashflow(self):
         return round(float(self.rental_income - self.monthly_expenses()), 2)
 
-    def effective_rent(self):
-        """assuming i live here, create a wrapper for that"""
-        self.property_type = "single"
-        self.set_expenses()
-        cashflow = self.cashflow()
-        self.reset_values()
-        return cashflow
-    
     def roi_as_pct(self):
         return round((self.cashflow() * 12) / self.down_payment, 2) * 100
     
     def print_numbers(self):
+        print(f"values for property as a {self.property_type} property")
         print(f"expenses: ${self.monthly_expenses()} / month")
         print(f"cashflow: ${self.cashflow()} / month")
         print(f"down_payment: ${self.down_payment} down")
@@ -176,27 +184,24 @@ class RealEstate(percents, utilities, webvalues):
 
 
         """
-        print(f"values for property as a {self.property_type} property")
-        self.property_type = "multi"
+        print("\n \n \n \n \n")
+        print("starting analysis --------")
+        print("-------------------")
 
-        self.set_expenses()
-        self.print_numbers()
-        
-        print("------------")
-
-        self.property_type = "single"
-        print(f"values for property as a {self.property_type} property")
-
-        self.set_expenses()
-        self.print_numbers()
-    
+        for p in ["multi", "single"]:
+            for i in ["investment", "primary_residence"]:
+                print(f"running numbers for {i} type scenario on {p} property")
+                self.property_type = p
+                self.set_expenses(i)
+                self.print_numbers()
+                print("---------------")
         self.reset_values()
         
     def reset_values(self):
         self.property_type = self._property_type
         self.list_price = self._list_price
         self.rental_income = self._rental_income
-        self.set_expenses()
+        self.set_expenses(self.property_type)
         print("resetting back to initialized values")
         
     def time_to_recoup(self):
@@ -240,7 +245,7 @@ class RealEstate(percents, utilities, webvalues):
         """this should be the verbose output where assumptions are listed so user knows what to watch out for"""
         
         self.analyze()
-        print("monthly payment: ", self.monthly_payment)
-        print("loan summary \n", self.loan.summarize)
-        print("house expenses accounted for", self._expenses())
+        # print("monthly payment: ", self.monthly_payment)
+        # print("loan summary \n", self.loan.summarize)
+        # print("house expenses accounted for", self._expenses())
         
