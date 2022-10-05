@@ -28,6 +28,7 @@ class utilities:
 @dataclass
 class webvalues:
     list_price: int
+    sqft: int
     taxes: int = 100
     insurance: int = 100
     hoa: int = 0
@@ -127,6 +128,7 @@ class RealEstate(percents, utilities, webvalues):
                 # when i live there, the rent is lower
                 # when i move out, the rent is higher
                 self.effective_rent = min(self.rentroll)
+                print("RESETTING RENT INCOME BASESD ON MULTIFAMILY HOUSEHACK")
                 self.rental_income = sum(self.rentroll) - self.effective_rent
 
                 self.capex = self.rental_income * percents.capex
@@ -163,17 +165,20 @@ class RealEstate(percents, utilities, webvalues):
         return round((self.cashflow() * 12) / self.down_payment, 2) * 100
 
     def print_numbers(self):
-        print(f"expenses: ${self.monthly_expenses()} / month\n")
-        print(f"rental income: {self.rental_income} $ / month\n")
         print(f"cashflow: ${self.cashflow()} / month\n")
+        print(f"return on investment: {self.roi_as_pct()} %\n")
+        print(f"time to recoup investment: {self.time_to_recoup()}\n")
+
         print(
             f"Required down payment using {self.down_payment_pct * 100}% down: ${self.down_payment} down\n"
         )
-        print(f"return on investment: {self.roi_as_pct()} %\n")
-        print(f"time to recoup investment: {self.time_to_recoup()}\n")
-        print(f"rent covers mortgage: {self.covers_mortgage()}")
+
+        print(f"rent covers mortgage: {self.covers_mortgage()}\n")
         if self.covers_mortgage() == False:
-            self.find_feasable_rent()
+            self.find_breakeven_rent()
+
+        print(f"rental income: {self.rental_income} $ / month\n")
+        print(f"expenses: ${self.monthly_expenses()} / month\n")
 
         return {
             "cashflow": self.cashflow(),
@@ -181,7 +186,7 @@ class RealEstate(percents, utilities, webvalues):
             "expenses": self.monthly_expenses(),
         }
 
-    def find_feasable_rent(self):
+    def find_breakeven_rent(self):
         original_rent = self.rental_income
         while self.covers_mortgage() == False:
             self.rental_income += 1
@@ -189,7 +194,7 @@ class RealEstate(percents, utilities, webvalues):
             (original_rent - self.rental_income) / original_rent
         ) * 100
         print(
-            f"required rent to cover mortgage is {self.rental_income} which is {pct_different}% different "
+            f"required rent to cover mortgage is ${self.rental_income} which is {pct_different}% different "
         )
         self.rental_income = sum(self.rentroll)
 
@@ -234,7 +239,7 @@ class RealEstate(percents, utilities, webvalues):
         print("starting analysis --------")
         print("-------------------")
 
-        for housetype in ["house_hack", "pure_investment"]:
+        for housetype in ["pure_investment", "house_hack"]:
             print(
                 f"running numbers for '{housetype}' type scenario on {self.property_type} property\n"
             )
@@ -256,36 +261,42 @@ class RealEstate(percents, utilities, webvalues):
         else:
             return (months, "months")
 
-    # def plot_equity(self):
-    #     # TODO: use RealEstate.loan._schedule to iterate over payment types
-    #     print(dir(self.loan))
-    #     balance = self.down_payment
-    #     equity = []
-    #     month = 1
-    #     date = []
-    #     while balance <= self.list_price:
-    #         date.append(month/12)
-    #         month += 1
-    #         balance += self.monthly_payment
-    #         equity.append(balance)
-    #     plt.scatter(date, equity)
+    def plot_equity(self):
+        # TODO: use RealEstate.loan._schedule to iterate over payment types
+        print(dir(self.loan))
+        balance = self.down_payment
+        equity = []
+        month = 1
+        date = []
+        while balance <= self.list_price:
+            date.append(month / 12)
+            month += 1
+            balance += self.monthly_payment
+            equity.append(balance)
+        plt.scatter(date, equity)
 
-    # def plot_debt(self):
-    #     # TODO: use RealEstate.loan._schedule to iterate over payment types
-    #     balance = self.principal_amount
-    #     debt = []
-    #     month = 1
-    #     date = []
-    #     while balance >= 1.4740E-20:
-    #         date.append(month/12)
-    #         month += 1
-    #         balance -= self.monthly_payment
-    #         debt.append(balance)
-    #     plt.scatter(date, debt)
+    def plot_debt(self):
+        # TODO: use RealEstate.loan._schedule to iterate over payment types
+        balance = self.principal_amount
+        debt = []
+        month = 1
+        date = []
+        while balance >= 1.4740e-20:
+            date.append(month / 12)
+            month += 1
+            balance -= self.monthly_payment
+            debt.append(balance)
+        plt.scatter(date, debt)
 
     def generate_full_report(self):
-        """this should be the verbose output where assumptions are listed so user knows what to watch out for"""
+        """this should be the verbose output where assumptions are listed
+        so user knows what to watch out for.
 
+        Full report should be as follows:
+            this property cashflows +/- $/month
+
+            the budgeted expenses are _,_,_,_,
+        """
         self.analyze()
         # print("monthly payment: ", self.monthly_payment)
         # print("loan summary \n", self.loan.summarize)
