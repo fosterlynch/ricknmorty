@@ -234,11 +234,11 @@ class RealEstate(percents, utilities, webvalues):
         print("starting analysis --------")
         print("-------------------")
 
-        for housetype in ["pure_investment", "house_hack"]:
+        for housetype in ["house_hack", "pure_investment"]:
             print(
                 f"running numbers for '{housetype}' type scenario on {self.property_type} property\n"
             )
-            self.set_expenses(type)
+            self.set_expenses(housetype)
             self.print_numbers()
             print("---------------")
         self.reset_values()
