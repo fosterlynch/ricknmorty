@@ -1,15 +1,14 @@
 a:
 	docker container stop mortgage
-	
+
 	docker container rm mortgage
-	
+
 	docker build --file=Dockerfile --tag mortgage .
-	
+
 	docker run -it -p 8888:8888 \
 	--name=mortgage \
 	mortgage \
-	python3 gemm.py
-	# jupyter notebook --allow-root --ip 0.0.0.0 --port 8888
+	python3 testme.py
 
 build:
 	docker build --file=Dockerfile \
@@ -19,7 +18,7 @@ run:
 	docker run -it -p 8888:8888 \
 	--name=mortgage \
 	mortgage \
-	python3 pull_data.py
+	python3 testme.py
 	# jupyter notebook --ip 0.0.0.0 --port=8888 --no-browser --allow-root
 
 save:

@@ -15,10 +15,14 @@ RUN apt-get update && \
 
 RUN pip3 install requests beautifulsoup4 python-dotenv
 RUN pip3 install notebook mortgage matplotlib
+RUN pip3 install pytest
+
 
 WORKDIR ./explore
-COPY .env ./
+# COPY .env ./
 COPY mortgage.ipynb ./
 COPY pull_data.py ./
-COPY gemm.py ./
+COPY testme.py ./
 COPY realestate.py ./
+
+COPY tests/ tests/
