@@ -191,7 +191,7 @@ class RealEstate(percents, utilities, webvalues):
         while self.covers_mortgage() == False:
             self.rental_income += 1
         pct_different = (
-            (original_rent - self.rental_income) / original_rent
+            (self.rental_income - original_rent) / original_rent
         ) * 100
         print(
             f"required rent to cover mortgage is ${self.rental_income} which is {pct_different}% different "
