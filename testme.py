@@ -1,11 +1,13 @@
 from realestate import RealEstate, webvalues
 
-list_price = 599000
+# import matplotlib.pyplot as plt
+
+list_price = 200000
 property_type = "multi"
-taxes = 453
-insurance = 160
+taxes = 537
+insurance = 53
 hoa_fees = 0
-rentroll = [1500, 1500]
+rentroll = [800, 800]
 investment_type = "house_hack"
 sqft = 1500
 
