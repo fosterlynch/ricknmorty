@@ -11,6 +11,7 @@ class percents:
     repairs: float = 0.08
     mgmt: float = 0.1
     vacancy: float = 0.05
+    down_payment_pct: float = 0.03
 
 
 @dataclass
@@ -33,7 +34,7 @@ class webvalues:
     insurance: int = 100
     hoa: int = 0
     lawn: int = 50
-    rentroll: List = field(default_factory=[0])
+    rentroll: List = field(default_factory=lambda: [0])
     property_type: str = "single"
     investment_type: str = "house_hack"
     interest_rate: float = 0.05
@@ -43,7 +44,6 @@ class webvalues:
         assert self.property_type in ["single", "multi"]
         assert self.investment_type in ["house_hack", "pure_investment"]
 
-
 class RealEstate(percents, utilities, webvalues):
     def __init__(
         self, webvalues=webvalues, utilities=utilities, percents=percents
@@ -51,6 +51,7 @@ class RealEstate(percents, utilities, webvalues):
         """Calculate monthly expenses"""
 
         self.debug = False
+
         self.water_sewer = utilities.water_sewer
         self.garbage = utilities.garbage
         self.electric = utilities.electric
@@ -60,12 +61,12 @@ class RealEstate(percents, utilities, webvalues):
         self.insurance = webvalues.insurance
         self.hoa = webvalues.hoa
         self.lawn = webvalues.lawn
-
         self.list_price = webvalues.list_price
         self.property_type = webvalues.property_type
         self.rentroll = webvalues.rentroll
-        self.rental_income = sum(webvalues.rentroll)
-        self.set_expenses(webvalues.investment_type)
+
+        self.rental_income = sum(self.rentroll)
+        self.set_expenses(self.investment_type)
 
     def compute_payment(self, down_payment_pct):
         self.down_payment = self.list_price * down_payment_pct
