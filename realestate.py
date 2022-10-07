@@ -345,9 +345,3 @@ class RealEstate(percents, utilities, webvalues):
         # print("monthly payment: ", self.monthly_payment)
         # print("loan summary \n", self.loan.summarize)
         # print("house expenses accounted for", self._expenses())
-
-    def save_information(webvalues):
-        for variable, value in vars(webvalues).items():
-            print(variable, value)
-            # if variable[:1] == '_':
-            #     recordString += value
