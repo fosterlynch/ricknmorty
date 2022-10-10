@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 @dataclass
-class percents:
+class Percents:
     """default percents to estimate expenses that are variable to rental income"""
 
     capex: float = 0.1
@@ -20,7 +20,7 @@ class percents:
 
 
 @dataclass
-class utilities:
+class Utilities:
     """Rough estimations for fixed expenses"""
 
     water_sewer: int = 120
@@ -30,15 +30,20 @@ class utilities:
 
 
 @dataclass
-class webvalues:
+class Expenses(Utilities):
+
+    hoa: int = 0
+    lawn: int = 50
+    taxes: int = 100
+    insurance: int = 100
+
+
+@dataclass
+class Webvalues(Expenses):
     """These values will be specified by the user, these are the most important """
 
     list_price: int
     sqft: int
-    taxes: int = 100
-    insurance: int = 100
-    hoa: int = 0  # these could probably move into a utilities class since its often that there arent hoa fees
-    lawn: int = 50
     rentroll: List = field(default_factory=lambda: [0])
     property_type: str = "single"
     investment_type: str = "house_hack"
