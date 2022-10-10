@@ -24,16 +24,16 @@ wv = webvalues(
     address=address
 )
 
-bills = utilities()
-
-house = RealEstate(webvalues=wv)
+# house = RealEstate(webvalues=wv)
 
 def test_class_has_correct_down_payment_percentages():
     canon = {"pure_investment":0.2, "house_hack":0.03}
 
     for key, val in canon.items():
         wv.investment_type = key
+        print(wv)
         house = RealEstate(wv)
+        print(house)
         assert house.down_payment_pct == val
         
 # def test_class_sets_expenses_correctly():

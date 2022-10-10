@@ -29,7 +29,7 @@ class utilities:
 @dataclass
 class webvalues:
     list_price: int
-    sqft: int
+    address: str
     taxes: int = 100
     insurance: int = 100
     hoa: int = 0
@@ -66,8 +66,7 @@ class RealEstate(percents, utilities, webvalues):
         self.rentroll = webvalues.rentroll
 
         self.rental_income = sum(self.rentroll)
-        self.set_expenses(self.investment_type)
-
+        
         self.set_income(
             self.rentroll,
             self.investment_type,
@@ -109,7 +108,7 @@ class RealEstate(percents, utilities, webvalues):
 
         if investment_type == "pure_investment":
             self.down_payment_pct = 0.2
-            self.compute_payment(down_payment_pct=self.down_payment_pct)
+            self.set_monthly_payment(down_payment_pct=self.down_payment_pct)
 
             if self.debug:
                 try:
@@ -133,7 +132,7 @@ class RealEstate(percents, utilities, webvalues):
         if investment_type == "house_hack":
             # personal property, variable expences will be a function of mortgage
             self.down_payment_pct = 0.03
-            self.compute_payment(down_payment_pct=self.down_payment_pct)
+            self.set_monthly_payment(down_payment_pct=self.down_payment_pct)
 
             if self.property_type == "single":
                 self.capex = self.monthly_payment * percents.capex
@@ -151,7 +150,7 @@ class RealEstate(percents, utilities, webvalues):
                 self.repairs = self.rental_income * percents.repairs
                 self.vacancy = self.rental_income * percents.vacancy
 
-    def compute_payment(self, down_payment_pct: float):
+    def set_monthly_payment(self, down_payment_pct: float):
         """
         Compute monthly mortgage based on down payment percent, list price,
         and some internal variables inside Loan package
@@ -167,7 +166,7 @@ class RealEstate(percents, utilities, webvalues):
         )
         self.monthly_payment = float(self.loan.monthly_payment)
 
-    def _expenses(self):
+    def _get_all_expenses(self):
         return {
             "capex": self.capex,
             "mgmt": self.mgmt_fees,
@@ -186,7 +185,7 @@ class RealEstate(percents, utilities, webvalues):
         }
 
     def monthly_expenses(self):
-        return sum(self._expenses().values())
+        return sum(self._get_all_expenses().values())
 
     def cashflow(self):
         return round(float(self.rental_income - self.monthly_expenses()), 2)
