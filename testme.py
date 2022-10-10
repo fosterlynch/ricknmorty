@@ -10,18 +10,18 @@ hoa_fees = 0
 rentroll = [800, 800]
 investment_type = "house_hack"
 # sqft = 1500
-address = "123 main street, rochester, NY 14607"
+# address = "123 main street, rochester, NY 14607"
 
 
 wv = webvalues(
+    list_price=list_price,
     property_type=property_type,
     investment_type=investment_type,
-    list_price=list_price,
     rentroll=rentroll,
     insurance=insurance,
     taxes=taxes,
     hoa=hoa_fees,
-    address=address
+    # address=address
 )
 
 house = RealEstate(webvalues=wv)

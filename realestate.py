@@ -1,3 +1,4 @@
+from ctypes import util
 from typing import List
 from mortgage import Loan
 from dataclasses import dataclass, field
@@ -6,35 +7,38 @@ import matplotlib.pyplot as plt
 
 @dataclass
 class percents:
+    """default percents to estimate expenses that are variable to rental income"""
+
     capex: float = 0.1
     misc_ex: float = 0.05
     repairs: float = 0.08
     mgmt: float = 0.1
     vacancy: float = 0.05
-    down_payment_pct: float = 0.03
+    down_payment_pct: float = (
+        0.03  # this is not an expense, I should move this
+    )
+    # somewhere else
 
 
 @dataclass
 class utilities:
-    """monthly value estimations, rough estimations"""
+    """Rough estimations for fixed expenses"""
 
-    water_sewer: int = 120  # eventually these should be distributions
-    gas: int = 120  # that way there can be lower and upper bound estimations on profitability
-    electric: int = (
-        120  # then I can just analyze using the lower bound profitability
-    )
+    water_sewer: int = 120
+    gas: int = 120
+    electric: int = 120
     garbage: int = 40
-
 
 @dataclass
 class webvalues:
+    """These values will be specified by the user, these are the most important """
+
     list_price: int
-    address: str
-    taxes: int = 100
-    insurance: int = 100
-    hoa: int = 0
-    lawn: int = 50
     rentroll: List = field(default_factory=lambda: [0])
+    insurance:int = 100
+    taxes:int = 100
+    hoa:int = 0
+    lawn:int = 50
     property_type: str = "single"
     investment_type: str = "house_hack"
     interest_rate: float = 0.05
@@ -44,7 +48,18 @@ class webvalues:
         assert self.property_type in ["single", "multi"]
         assert self.investment_type in ["house_hack", "pure_investment"]
 
-class RealEstate(percents, utilities, webvalues):
+
+class RealEstate(webvalues, utilities, percents):
+    """The responsibility of the RealEstate Class is to generate a financial
+    profile for the given property of interest
+
+
+    Args:
+        percents (_type_): _description_
+        utilities (_type_): _description_
+        webvalues (_type_): _description_
+    """
+
     def __init__(
         self, webvalues=webvalues, utilities=utilities, percents=percents
     ):
@@ -304,7 +319,9 @@ class RealEstate(percents, utilities, webvalues):
         else:
             return (months, "months")
 
-    def plot_equity(self):
+    def plot_equity(
+        self,
+    ):  # i think this could be part of the visualization class
         # TODO: use RealEstate.loan._schedule to iterate over payment types
         print(dir(self.loan))
         balance = self.down_payment
@@ -318,7 +335,9 @@ class RealEstate(percents, utilities, webvalues):
             equity.append(balance)
         plt.scatter(date, equity)
 
-    def plot_debt(self):
+    def plot_debt(
+        self,
+    ):  # i think this could be part of the visualization class
         # TODO: use RealEstate.loan._schedule to iterate over payment types
         balance = self.principal_amount
         debt = []

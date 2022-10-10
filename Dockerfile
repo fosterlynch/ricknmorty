@@ -25,5 +25,5 @@ COPY pull_data.py ./
 COPY testme.py ./
 COPY realestate.py ./
 
-COPY tests/ tests/
-RUN python3 -m pytest tests
+# COPY tests/ tests/
+# RUN python3 -m pytest tests
