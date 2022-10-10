@@ -5,7 +5,7 @@ a:
 
 	docker build --file=Dockerfile --tag mortgage .
 
-	docker run -it -p 8888:8888 \
+	docker run -it \
 	--name=mortgage \
 	mortgage \
 	python3 testme.py
@@ -15,15 +15,20 @@ build:
 	--tag mortgage .
 
 run:
-	docker run -it -p 8888:8888 \
+	docker run -it \
 	--name=mortgage \
 	mortgage \
 	python3 testme.py
-	# jupyter notebook --ip 0.0.0.0 --port=8888 --no-browser --allow-root
 
 save:
-	docker cp d5190f00ddd5:explore/mortgage.ipynb ./mortgage.ipynb
+	docker cp <insert docker image here>:explore/mortgage.ipynb ./mortgage.ipynb
 
 stop:
 	docker container stop mortgage
 	docker container rm mortgage
+
+notebook:
+	docker run -it -p 8888:8888 \
+	--name=mortgage \
+	mortgage \
+	jupyter notebook --ip 0.0.0.0 --port=8888 --no-browser --allow-root
