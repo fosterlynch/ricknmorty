@@ -50,7 +50,7 @@ class Webvalues:
         assert self.investment_type in ["house_hack", "pure_investment"]
 
 
-class House(Webvalues, Utilities, Percents):
+class House(Webvalues, Utilities):
     """The responsibility of the RealEstate Class is to generate a financial
     profile for the given property of interest
 
@@ -61,24 +61,25 @@ class House(Webvalues, Utilities, Percents):
         webvalues (_type_): _description_
     """
 
-    def __init__(
-        self, webvalues=Webvalues, utilities=Utilities, percents=Percents
-    ):
-        self.webvalues = webvalues
+    def __init__(self, webvalues=Webvalues, utilities=Utilities):
         """Calculate monthly expenses"""
+
+        self._webvalues = webvalues
         self.debug = False
+
         self.water_sewer = utilities.water_sewer
         self.garbage = utilities.garbage
         self.electric = utilities.electric
         self.gas = utilities.gas
 
-        self.taxes = webvalues.taxes
-        self.insurance = webvalues.insurance
-        self.hoa = webvalues.hoa
-        self.lawn = webvalues.lawn
-        self.list_price = webvalues.list_price
-        self.property_type = webvalues.property_type
-        self.rentroll = webvalues.rentroll
+        self.taxes = self._webvalues.taxes
+        self.insurance = self._webvalues.insurance
+        self.hoa = self._webvalues.hoa
+        self.lawn = self._webvalues.lawn
+        self.list_price = self._webvalues.list_price
+        self.rentroll = self._webvalues.rentroll
+        self.investment_type = self._webvalues.investment_type
+        self.property_type = self._webvalues.property_type
 
         self.rental_income = sum(self.rentroll)
 
@@ -206,6 +207,81 @@ class House(Webvalues, Utilities, Percents):
     def roi_as_pct(self):
         return round((self.cashflow() * 12) / self.down_payment, 2) * 100
 
+    def covers_mortgage(self):
+        return self.rental_income >= (self.monthly_payment + self.taxes)
+
+    def time_to_recoup(self):
+        """compute the total time before I gain my investment back in months"""
+
+        if self.cashflow() < 0:
+            return None
+        months = self.down_payment / abs(self.cashflow())
+        if months > 12:
+            return (months / 12, "years")
+        else:
+            return (months, "months")
+
+    def find_breakeven_rent(self):
+        """
+        Given current rental income, find how much rent would need to be charged
+        in order to cover taxes and morgage.
+
+        """
+        original_rent = self.rental_income
+
+        while self.covers_mortgage() == False:
+            self.rental_income += 1
+
+        rental_increase = self.rental_income
+        self.rental_income = original_rent
+
+        pct_different = (
+            (rental_increase - original_rent) / original_rent
+        ) * 100
+
+        print(
+            f"additional rent required rent to cover mortgage is ${rental_increase} which is an {pct_different}% increase"
+        )
+        print(
+            f"total charged rentroll would be {self.rental_income + rental_increase}"
+        )
+
+    def run_scenarios(self):
+        """"""
+        print("starting analysis --------")
+        print("-------------------")
+        for investment_type in ["pure_investment", "house_hack"]:
+            self.investment_type = investment_type
+            self.set_income(
+                self.rentroll, self.investment_type, self.property_type
+            )
+            self.set_expenses_by_type(self.investment_type, self.property_type)
+            self.print_numbers()
+        self.reset_values()
+
+    def reset_values(self):
+
+        self.set_income(
+            self._webvalues.rentroll,
+            self._webvalues.investment_type,
+            self._webvalues.property_type,
+        )
+        self.set_expenses_by_type(
+            self._webvalues.investment_type, self._webvalues.property_type
+        )
+
+    def generate_full_report(self):
+        """this should be the verbose output where assumptions are listed
+        so user knows what to watch out for.
+
+        Full report should be as follows:
+            this property cashflows +/- $/month
+
+            the budgeted expenses are _,_,_,_,
+        """
+
+        self.run_scenarios()
+
     def print_numbers(self):
         print(
             f"running numbers for '{self.investment_type}' type scenario on {self.property_type} property\n"
@@ -231,70 +307,3 @@ class House(Webvalues, Utilities, Percents):
             "recoup_time": self.time_to_recoup(),
             "expenses": self.monthly_expenses(),
         }
-
-    def find_breakeven_rent(self):
-        original_rent = self.rental_income
-
-        while self.covers_mortgage() == False:
-            self.rental_income += 1
-
-        rental_increase = self.rental_income
-        self.rental_income = original_rent
-
-        pct_different = (
-            (rental_increase - original_rent) / original_rent
-        ) * 100
-
-        print(
-            f"additional rent required rent to cover mortgage is ${rental_increase} which is an {pct_different}% increase"
-        )
-        print(
-            f"total charged rentroll would be {self.rental_income + rental_increase}"
-        )
-
-    def covers_mortgage(self):
-        return self.rental_income >= (self.monthly_payment + self.taxes)
-
-    def run_scenarios(self):
-        """"""
-        print("starting analysis --------")
-        print("-------------------")
-        for investment_type in ["pure_investment", "house_hack"]:
-            self.investment_type = investment_type
-            self.set_income(
-                self.rentroll, self.investment_type, self.property_type
-            )
-            self.set_expenses_by_type(self.investment_type, self.property_type)
-            self.print_numbers()
-        self.reset_values()
-
-    def reset_values(self):
-        self.set_income(
-            self.rentroll,
-            self.webvalues.investment_type,
-            self.webvalues.property_type,
-        )
-        self.set_expenses_by_type(
-            self.webvalues.investment_type, self.webvalues.property_type
-        )
-
-    def time_to_recoup(self):
-        """compute the total time before I gain my investment back in months"""
-        if self.cashflow() < 0:
-            return None
-        months = self.down_payment / abs(self.cashflow())
-        if months > 12:
-            return (months / 12, "years")
-        else:
-            return (months, "months")
-
-    def generate_full_report(self):
-        """this should be the verbose output where assumptions are listed
-        so user knows what to watch out for.
-
-        Full report should be as follows:
-            this property cashflows +/- $/month
-
-            the budgeted expenses are _,_,_,_,
-        """
-        self.run_scenarios()
