@@ -50,7 +50,7 @@ class Webvalues:
         assert self.investment_type in ["house_hack", "pure_investment"]
 
 
-class House(Webvalues):
+class House(Webvalues, Utilities, Percents):
     """The responsibility of the RealEstate Class is to generate a financial
     profile for the given property of interest
 
@@ -62,36 +62,36 @@ class House(Webvalues):
     """
 
     def __init__(
-        self, webvalues
+        self, webvalues=Webvalues, utilities=Utilities, percents=Percents
     ):
+        self.webvalues = webvalues
         """Calculate monthly expenses"""
         self.debug = False
-        self.water_sewer = Utilities.water_sewer
-        self.garbage = Utilities.garbage
-        self.electric = Utilities.electric
-        self.gas = Utilities.gas
+        self.water_sewer = utilities.water_sewer
+        self.garbage = utilities.garbage
+        self.electric = utilities.electric
+        self.gas = utilities.gas
 
-        # self.taxes = webvalues.taxes
-        # self.insurance = webvalues.insurance
-        # self.hoa = webvalues.hoa
-        # self.lawn = webvalues.lawn
-        # self.list_price = webvalues.list_price
-        # self.property_type = webvalues.property_type
+        self.taxes = webvalues.taxes
+        self.insurance = webvalues.insurance
+        self.hoa = webvalues.hoa
+        self.lawn = webvalues.lawn
+        self.list_price = webvalues.list_price
+        self.property_type = webvalues.property_type
         self.rentroll = webvalues.rentroll
 
         self.rental_income = sum(self.rentroll)
 
-        # self.set_income(
-        #     self.rentroll,
-        #     self.investment_type,
-        #     self.property_type,
-        # )
+        self.set_income(
+            self.rentroll,
+            self.investment_type,
+            self.property_type,
+        )
 
-        # self.set_expenses_by_type(
-        #     self.investment_type,
-        #     self.property_type,
-        # )
-        print(dir(self))
+        self.set_expenses_by_type(
+            self.investment_type,
+            self.property_type,
+        )
 
     def set_income(self, rentroll, investment_type, property_type):
         if investment_type == "house_hack":
@@ -253,24 +253,29 @@ class House(Webvalues):
         )
 
     def covers_mortgage(self):
-        return self.rental_income >= (self.monthly_payment + self.webvalues.taxes)
+        return self.rental_income >= (self.monthly_payment + self.taxes)
 
     def run_scenarios(self):
         """"""
         print("starting analysis --------")
         print("-------------------")
         for investment_type in ["pure_investment", "house_hack"]:
-            self.set_income(self.rentroll, investment_type, self.property_type)
-            self.set_expenses_by_type(investment_type, self.property_type)
+            self.investment_type = investment_type
+            self.set_income(
+                self.rentroll, self.investment_type, self.property_type
+            )
+            self.set_expenses_by_type(self.investment_type, self.property_type)
             self.print_numbers()
         self.reset_values()
 
     def reset_values(self):
         self.set_income(
-            self.rentroll, webvalues.investment_type, webvalues.property_type
+            self.rentroll,
+            self.webvalues.investment_type,
+            self.webvalues.property_type,
         )
         self.set_expenses_by_type(
-            webvalues.investment_type, webvalues.property_type
+            self.webvalues.investment_type, self.webvalues.property_type
         )
 
     def time_to_recoup(self):
