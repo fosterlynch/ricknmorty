@@ -1,4 +1,4 @@
-from realestate import RealEstate, Webvalues
+from realestate import House, Webvalues
 
 # import matplotlib.pyplot as plt
 
@@ -13,7 +13,7 @@ investment_type = "house_hack"
 # address = "123 main street, rochester, NY 14607"
 
 
-wv = Webvalues(
+webvalues = Webvalues(
     list_price=list_price,
     property_type=property_type,
     investment_type=investment_type,
@@ -21,8 +21,7 @@ wv = Webvalues(
     insurance=insurance,
     taxes=taxes,
     hoa=hoa_fees,
-    # address=address
 )
-
-house = RealEstate(wv)
+print(dir(webvalues))
+house = House(webvalues)
 house.run_scenarios()

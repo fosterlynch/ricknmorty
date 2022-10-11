@@ -50,7 +50,7 @@ class Webvalues:
         assert self.investment_type in ["house_hack", "pure_investment"]
 
 
-class RealEstate(Webvalues, Utilities, Percents):
+class House(Webvalues):
     """The responsibility of the RealEstate Class is to generate a financial
     profile for the given property of interest
 
@@ -62,37 +62,36 @@ class RealEstate(Webvalues, Utilities, Percents):
     """
 
     def __init__(
-        self, webvalues=Webvalues, utilities=Utilities, percents=Percents
+        self, webvalues
     ):
         """Calculate monthly expenses"""
-
         self.debug = False
+        self.water_sewer = Utilities.water_sewer
+        self.garbage = Utilities.garbage
+        self.electric = Utilities.electric
+        self.gas = Utilities.gas
 
-        self.water_sewer = utilities.water_sewer
-        self.garbage = utilities.garbage
-        self.electric = utilities.electric
-        self.gas = utilities.gas
-
-        self.taxes = webvalues.taxes
-        self.insurance = webvalues.insurance
-        self.hoa = webvalues.hoa
-        self.lawn = webvalues.lawn
-        self.list_price = webvalues.list_price
-        self.property_type = webvalues.property_type
+        # self.taxes = webvalues.taxes
+        # self.insurance = webvalues.insurance
+        # self.hoa = webvalues.hoa
+        # self.lawn = webvalues.lawn
+        # self.list_price = webvalues.list_price
+        # self.property_type = webvalues.property_type
         self.rentroll = webvalues.rentroll
 
         self.rental_income = sum(self.rentroll)
 
-        self.set_income(
-            self.rentroll,
-            self.investment_type,
-            self.property_type,
-        )
+        # self.set_income(
+        #     self.rentroll,
+        #     self.investment_type,
+        #     self.property_type,
+        # )
 
-        self.set_expenses_by_type(
-            self.investment_type,
-            self.property_type,
-        )
+        # self.set_expenses_by_type(
+        #     self.investment_type,
+        #     self.property_type,
+        # )
+        print(dir(self))
 
     def set_income(self, rentroll, investment_type, property_type):
         if investment_type == "house_hack":
@@ -131,11 +130,11 @@ class RealEstate(Webvalues, Utilities, Percents):
             except AssertionError:
                 print("Warning: Rental property income is 0, this isn't good.")
 
-        self.capex = self.rental_income * percents.capex
-        self.mgmt_fees = self.rental_income * percents.mgmt
-        self.repairs = self.rental_income * percents.repairs
-        self.misc_expenses = self.rental_income * percents.misc_ex
-        self.vacancy = self.rental_income * percents.vacancy
+        self.capex = self.rental_income * Percents.capex
+        self.mgmt_fees = self.rental_income * Percents.mgmt
+        self.repairs = self.rental_income * Percents.repairs
+        self.misc_expenses = self.rental_income * Percents.misc_ex
+        self.vacancy = self.rental_income * Percents.vacancy
 
         # tenant pays these
         self.water_sewer = 0
@@ -149,20 +148,20 @@ class RealEstate(Webvalues, Utilities, Percents):
         self.set_monthly_payment(down_payment_pct=self.down_payment_pct)
 
         if self.property_type == "single":
-            self.capex = self.monthly_payment * percents.capex
+            self.capex = self.monthly_payment * Percents.capex
             self.mgmt_fees = 0  # I live there, there is no management fee
-            self.misc_expenses = self.monthly_payment * percents.misc_ex
-            self.repairs = self.monthly_payment * percents.repairs
+            self.misc_expenses = self.monthly_payment * Percents.misc_ex
+            self.repairs = self.monthly_payment * Percents.repairs
             self.vacancy = 0  # I live there, there is no management fee
 
         if self.property_type == "multi":
             # year one while i live there, my rent is reduced, year two my mortgage is still low, but my rent increases
 
-            self.capex = self.rental_income * percents.capex
-            self.mgmt_fees = self.rental_income * percents.mgmt
-            self.misc_expenses = self.rental_income * percents.misc_ex
-            self.repairs = self.rental_income * percents.repairs
-            self.vacancy = self.rental_income * percents.vacancy
+            self.capex = self.rental_income * Percents.capex
+            self.mgmt_fees = self.rental_income * Percents.mgmt
+            self.misc_expenses = self.rental_income * Percents.misc_ex
+            self.repairs = self.rental_income * Percents.repairs
+            self.vacancy = self.rental_income * Percents.vacancy
 
     def set_monthly_payment(self, down_payment_pct: float):
         """
@@ -254,7 +253,7 @@ class RealEstate(Webvalues, Utilities, Percents):
         )
 
     def covers_mortgage(self):
-        return self.rental_income >= (self.monthly_payment + webvalues.taxes)
+        return self.rental_income >= (self.monthly_payment + self.webvalues.taxes)
 
     def run_scenarios(self):
         """"""
