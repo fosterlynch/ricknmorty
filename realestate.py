@@ -83,15 +83,17 @@ class House(Webvalues, Utilities):
 
         self.rental_income = sum(self.rentroll)
 
-        self.set_income(
-            self.rentroll,
-            self.investment_type,
-            self.property_type,
-        )
+        self.set_income_and_expenses()
 
+    def set_income_and_expenses(self):
+
+        self.set_income(
+            self._webvalues.rentroll,
+            self._webvalues.investment_type,
+            self._webvalues.property_type,
+        )
         self.set_expenses_by_type(
-            self.investment_type,
-            self.property_type,
+            self._webvalues.investment_type, self._webvalues.property_type
         )
 
     def set_income(self, rentroll, investment_type, property_type):
@@ -250,6 +252,7 @@ class House(Webvalues, Utilities):
         """"""
         print("starting analysis --------")
         print("-------------------")
+
         for investment_type in ["pure_investment", "house_hack"]:
             self.investment_type = investment_type
             self.set_income(
@@ -257,30 +260,7 @@ class House(Webvalues, Utilities):
             )
             self.set_expenses_by_type(self.investment_type, self.property_type)
             self.print_numbers()
-        self.reset_values()
-
-    def reset_values(self):
-
-        self.set_income(
-            self._webvalues.rentroll,
-            self._webvalues.investment_type,
-            self._webvalues.property_type,
-        )
-        self.set_expenses_by_type(
-            self._webvalues.investment_type, self._webvalues.property_type
-        )
-
-    def generate_full_report(self):
-        """this should be the verbose output where assumptions are listed
-        so user knows what to watch out for.
-
-        Full report should be as follows:
-            this property cashflows +/- $/month
-
-            the budgeted expenses are _,_,_,_,
-        """
-
-        self.run_scenarios()
+        self.set_income_and_expenses()
 
     def print_numbers(self):
         print(
