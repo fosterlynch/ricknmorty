@@ -25,4 +25,4 @@ wv = webvalues(
 )
 
 house = RealEstate(webvalues=wv)
-house.analyze()
+house.run_scenarios()

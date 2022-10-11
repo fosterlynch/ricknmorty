@@ -89,7 +89,7 @@ class RealEstate(webvalues, utilities, percents):
             self.property_type,
         )
 
-        self.set_expenses(
+        self.set_expenses_by_type(
             self.investment_type,
             self.property_type,
         )
@@ -102,7 +102,7 @@ class RealEstate(webvalues, utilities, percents):
         else:
             self.rental_income = sum(rentroll)
 
-    def set_expenses(self, investment_type, property_type):
+    def set_expenses_by_type(self, investment_type, property_type):
         """
         set expenses takes in rental income, investment type, and property type
         and then sets class expense attributes to correct value based on the
@@ -115,56 +115,54 @@ class RealEstate(webvalues, utilities, percents):
             investment_type (_type_): _description_
             property_type (_type_): _description_
         """
-        try:
-            assert investment_type in ["house_hack", "pure_investment"]
-        except AssertionError:
-            print(
-                f"AssertionError: investment type: {investment_type} not in ['house_hack','pure_investment']"
-            )
-
         if investment_type == "pure_investment":
-            self.down_payment_pct = 0.2
-            self.set_monthly_payment(down_payment_pct=self.down_payment_pct)
+            self.set_expenses_investment()
 
-            if self.debug:
-                try:
-                    assert self.rental_income != 0
-                except AssertionError:
-                    print(
-                        "Warning: Rental property income is 0, this isn't good."
-                    )
+        if investment_type == "house_hack":
+            self.set_expenses_house_hack()
+
+    def set_expenses_investment(self):
+        self.down_payment_pct = 0.2
+        self.set_monthly_payment(down_payment_pct=self.down_payment_pct)
+
+        if self.debug:
+            try:
+                assert self.rental_income != 0
+            except AssertionError:
+                print("Warning: Rental property income is 0, this isn't good.")
+
+        self.capex = self.rental_income * percents.capex
+        self.mgmt_fees = self.rental_income * percents.mgmt
+        self.repairs = self.rental_income * percents.repairs
+        self.misc_expenses = self.rental_income * percents.misc_ex
+        self.vacancy = self.rental_income * percents.vacancy
+
+        # tenant pays these
+        self.water_sewer = 0
+        self.garbage = 0
+        self.electric = 0
+        self.gas = 0
+
+    def set_expenses_house_hack(self):
+        # personal property, variable expences will be a function of mortgage
+        self.down_payment_pct = 0.03
+        self.set_monthly_payment(down_payment_pct=self.down_payment_pct)
+
+        if self.property_type == "single":
+            self.capex = self.monthly_payment * percents.capex
+            self.mgmt_fees = 0  # I live there, there is no management fee
+            self.misc_expenses = self.monthly_payment * percents.misc_ex
+            self.repairs = self.monthly_payment * percents.repairs
+            self.vacancy = 0  # I live there, there is no management fee
+
+        if self.property_type == "multi":
+            # year one while i live there, my rent is reduced, year two my mortgage is still low, but my rent increases
 
             self.capex = self.rental_income * percents.capex
             self.mgmt_fees = self.rental_income * percents.mgmt
-            self.repairs = self.rental_income * percents.repairs
             self.misc_expenses = self.rental_income * percents.misc_ex
+            self.repairs = self.rental_income * percents.repairs
             self.vacancy = self.rental_income * percents.vacancy
-
-            self.water_sewer = 0
-            self.garbage = 0
-            self.electric = 0
-            self.gas = 0
-
-        if investment_type == "house_hack":
-            # personal property, variable expences will be a function of mortgage
-            self.down_payment_pct = 0.03
-            self.set_monthly_payment(down_payment_pct=self.down_payment_pct)
-
-            if self.property_type == "single":
-                self.capex = self.monthly_payment * percents.capex
-                self.mgmt_fees = 0  # I live there, there is no management fee
-                self.misc_expenses = self.monthly_payment * percents.misc_ex
-                self.repairs = self.monthly_payment * percents.repairs
-                self.vacancy = 0  # I live there, there is no management fee
-
-            if self.property_type == "multi":
-                # year one while i live there, my rent is reduced, year two my mortgage is still low, but my rent increases
-
-                self.capex = self.rental_income * percents.capex
-                self.mgmt_fees = self.rental_income * percents.mgmt
-                self.misc_expenses = self.rental_income * percents.misc_ex
-                self.repairs = self.rental_income * percents.repairs
-                self.vacancy = self.rental_income * percents.vacancy
 
     def set_monthly_payment(self, down_payment_pct: float):
         """
@@ -255,38 +253,8 @@ class RealEstate(webvalues, utilities, percents):
     def covers_mortgage(self):
         return self.rental_income >= (self.monthly_payment + webvalues.taxes)
 
-    def analyze(self):
-        """
-        my property can be EITHER
-
-        Single family
-
-        OR
-
-        Multi family
-
-
-        IF it's single family. Then I should find what rent i could charge that would make me break
-        even. which is equivalent to the total expenses i need to account for PLUS my profitability
-        margin. which for single family we will claim to be 200 dollars / month.
-
-        IF its multifamily. then i need to run two loan options
-
-            one loan option is if i use it as a primary residence
-                if i am a resident, then num_units -= 1
-
-                one way to structure this would be rentroll[rent1,rent2,rent3]
-                then that gives me num_units = len(rentroll), total_rent = sum(rentroll),
-                as well as subtract one unit (assume low and high, )
-
-
-            one loan option is if i only buy it as an investment
-
-        !! I need to add my max amount I can put as a down payment, which will then tell me if I can
-        buy it with the 20% loan
-
-
-        """
+    def run_scenarios(self):
+        """"""
         print(
             "\n \n \n \n \n"
         )  # this is just here because docker adds a bunch of terminal text
@@ -299,7 +267,7 @@ class RealEstate(webvalues, utilities, percents):
                 f"running numbers for '{investment_type}' type scenario on {self.property_type} property\n"
             )
             self.set_income(self.rentroll, investment_type, self.property_type)
-            self.set_expenses(investment_type, self.property_type)
+            self.set_expenses_by_type(investment_type, self.property_type)
             self.print_numbers()
             print("---------------")
         self.reset_values()
@@ -308,7 +276,9 @@ class RealEstate(webvalues, utilities, percents):
         self.set_income(
             self.rentroll, webvalues.investment_type, webvalues.property_type
         )
-        self.set_expenses(webvalues.investment_type, webvalues.property_type)
+        self.set_expenses_by_type(
+            webvalues.investment_type, webvalues.property_type
+        )
 
     def time_to_recoup(self):
         """compute the total time before I gain my investment back in months"""
@@ -329,7 +299,7 @@ class RealEstate(webvalues, utilities, percents):
 
             the budgeted expenses are _,_,_,_,
         """
-        self.analyze()
+        self.run_scenarios()
         # print("monthly payment: ", self.monthly_payment)
         # print("loan summary \n", self.loan.summarize)
         # print("house expenses accounted for", self._expenses())

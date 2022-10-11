@@ -1,12 +1,13 @@
 from numbers import Real
 from realestate import RealEstate, webvalues, utilities, percents
+
 # from mortgage import Loan
 
 # example house values
 
 property_type = "multi"
 investment_type = "house_hack"
-list_price = 200000
+list_price = 100000
 rentroll = [800, 800]
 insurance = 53
 taxes = 537
@@ -21,13 +22,14 @@ wv = webvalues(
     insurance=insurance,
     taxes=taxes,
     hoa=hoa_fees,
-    address=address
+    address=address,
 )
 
 # house = RealEstate(webvalues=wv)
 
+
 def test_class_has_correct_down_payment_percentages():
-    canon = {"pure_investment":0.2, "house_hack":0.03}
+    canon = {"pure_investment": 0.2, "house_hack": 0.03}
 
     for key, val in canon.items():
         wv.investment_type = key
@@ -35,7 +37,8 @@ def test_class_has_correct_down_payment_percentages():
         house = RealEstate(wv)
         print(house)
         assert house.down_payment_pct == val
-        
+
+
 # def test_class_sets_expenses_correctly():
 
 # def test_class_has_correct_loan_amount():
