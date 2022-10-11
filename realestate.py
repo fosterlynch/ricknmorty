@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 @dataclass
-class percents:
+class Percents:
     """default percents to estimate expenses that are variable to rental income"""
 
     capex: float = 0.1
@@ -21,7 +21,7 @@ class percents:
 
 
 @dataclass
-class utilities:
+class Utilities:
     """Rough estimations for fixed expenses"""
 
     water_sewer: int = 120
@@ -31,11 +31,11 @@ class utilities:
 
 
 @dataclass
-class webvalues:
+class Webvalues:
     """These values will be specified by the user, these are the most important """
 
     list_price: int
-    rentroll: List = field(default_factory=lambda: [0])
+    rentroll: List = field(default_factory=lambda: [0])  # init = false?
     insurance: int = 100
     taxes: int = 100
     hoa: int = 0
@@ -50,7 +50,7 @@ class webvalues:
         assert self.investment_type in ["house_hack", "pure_investment"]
 
 
-class RealEstate(webvalues, utilities, percents):
+class RealEstate(Webvalues, Utilities, Percents):
     """The responsibility of the RealEstate Class is to generate a financial
     profile for the given property of interest
 
@@ -62,7 +62,7 @@ class RealEstate(webvalues, utilities, percents):
     """
 
     def __init__(
-        self, webvalues=webvalues, utilities=utilities, percents=percents
+        self, webvalues=Webvalues, utilities=Utilities, percents=Percents
     ):
         """Calculate monthly expenses"""
 
@@ -208,6 +208,9 @@ class RealEstate(webvalues, utilities, percents):
         return round((self.cashflow() * 12) / self.down_payment, 2) * 100
 
     def print_numbers(self):
+        print(
+            f"running numbers for '{self.investment_type}' type scenario on {self.property_type} property\n"
+        )
         print(f"cashflow: ${self.cashflow()} / month\n")
         print(f"return on investment: {self.roi_as_pct()} %\n")
         print(f"time to recoup investment: {self.time_to_recoup()}\n")
@@ -255,21 +258,12 @@ class RealEstate(webvalues, utilities, percents):
 
     def run_scenarios(self):
         """"""
-        print(
-            "\n \n \n \n \n"
-        )  # this is just here because docker adds a bunch of terminal text
         print("starting analysis --------")
         print("-------------------")
-
         for investment_type in ["pure_investment", "house_hack"]:
-            # for housetype in ["house_hack", "pure_investment"]:
-            print(
-                f"running numbers for '{investment_type}' type scenario on {self.property_type} property\n"
-            )
             self.set_income(self.rentroll, investment_type, self.property_type)
             self.set_expenses_by_type(investment_type, self.property_type)
             self.print_numbers()
-            print("---------------")
         self.reset_values()
 
     def reset_values(self):
@@ -300,6 +294,3 @@ class RealEstate(webvalues, utilities, percents):
             the budgeted expenses are _,_,_,_,
         """
         self.run_scenarios()
-        # print("monthly payment: ", self.monthly_payment)
-        # print("loan summary \n", self.loan.summarize)
-        # print("house expenses accounted for", self._expenses())
