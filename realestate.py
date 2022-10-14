@@ -1,4 +1,3 @@
-from ctypes import util
 from typing import List
 from mortgage import Loan
 from dataclasses import dataclass, field
@@ -125,7 +124,7 @@ class House(Webvalues, Utilities):
 
     def set_expenses_investment(self):
         self.down_payment_pct = 0.2
-        self.set_monthly_payment(down_payment_pct=self.down_payment_pct)
+        self.set_monthly_mortgage(down_payment_pct=self.down_payment_pct)
 
         if self.debug:
             try:
@@ -148,7 +147,7 @@ class House(Webvalues, Utilities):
     def set_expenses_house_hack(self):
         # personal property, variable expences will be a function of mortgage
         self.down_payment_pct = 0.03
-        self.set_monthly_payment(down_payment_pct=self.down_payment_pct)
+        self.set_monthly_mortgage(down_payment_pct=self.down_payment_pct)
 
         if self.property_type == "single":
             self.capex = self.monthly_payment * Percents.capex
@@ -166,7 +165,7 @@ class House(Webvalues, Utilities):
             self.repairs = self.rental_income * Percents.repairs
             self.vacancy = self.rental_income * Percents.vacancy
 
-    def set_monthly_payment(self, down_payment_pct: float):
+    def set_monthly_mortgage(self, down_payment_pct: float):
         """
         Compute monthly mortgage based on down payment percent, list price,
         and some internal variables inside Loan package
@@ -178,7 +177,9 @@ class House(Webvalues, Utilities):
         self.down_payment = self.list_price * down_payment_pct
         self.principal_amount = self.list_price - self.down_payment
         self.loan = Loan(
-            principal=self.principal_amount, interest=0.05, term=30
+            principal=self.principal_amount,
+            interest=self._webvalues.interest_rate,
+            term=int(self._webvalues.num_months / 12),
         )
         self.monthly_payment = float(self.loan.monthly_payment)
 
@@ -237,21 +238,20 @@ class House(Webvalues, Utilities):
         rental_increase = self.rental_income
         self.rental_income = original_rent
 
-        pct_different = (
-            (rental_increase - original_rent) / original_rent
-        ) * 100
+        if self.rental_income != 0:
+            pct_different = (
+                (rental_increase - original_rent) / original_rent
+            ) * 100
+
+            print(
+                f"additional rent required rent to cover mortgage is ${rental_increase} which is an {pct_different}% increase"
+            )
 
         print(
-            f"additional rent required rent to cover mortgage is ${rental_increase} which is an {pct_different}% increase"
-        )
-        print(
-            f"total charged rentroll would be {self.rental_income + rental_increase}"
+            f"Required rent to cover costs is {self.rental_income + rental_increase}"
         )
 
     def run_scenarios(self):
-        """"""
-        print("starting analysis --------")
-        print("-------------------")
 
         for investment_type in ["pure_investment", "house_hack"]:
             self.investment_type = investment_type
@@ -259,31 +259,38 @@ class House(Webvalues, Utilities):
                 self.rentroll, self.investment_type, self.property_type
             )
             self.set_expenses_by_type(self.investment_type, self.property_type)
-            self.print_numbers()
+            self.analyze()
         self.set_income_and_expenses()
 
-    def print_numbers(self):
-        print(
-            f"running numbers for '{self.investment_type}' type scenario on {self.property_type} property\n"
-        )
-        print(f"cashflow: ${self.cashflow()} / month\n")
-        print(f"return on investment: {self.roi_as_pct()} %\n")
-        print(f"time to recoup investment: {self.time_to_recoup()}\n")
+    def analyze(self, verbose=False):
 
-        print(
-            f"Required down payment using {self.down_payment_pct * 100}% down: ${self.down_payment} down\n"
-        )
+        print("starting analysis --------")
+        print("-------------------")
 
-        print(f"rental income: {self.rental_income} $ / month\n")
+        if verbose:
+            print(
+                f"property is type'{self.investment_type}' type scenario on {self.property_type} property"
+            )
+            print(f"cashflow: ${self.cashflow()} / month")
+            print(f"return on investment: {self.roi_as_pct()} %")
+            print(f"time to recoup investment: {self.time_to_recoup()}\n")
 
-        print(f"rent covers mortgage: {self.covers_mortgage()}\n")
+            print(
+                f"Required down payment using {self.down_payment_pct * 100}% down: ${self.down_payment} down\n"
+            )
+
+            print(f"rental income: {self.rental_income} $ / month\n")
+            print(f"rent covers mortgage: {self.covers_mortgage()}\n")
+            print(f"expenses: ${self.monthly_expenses()} / month\n")
+
         if self.covers_mortgage() == False:
             self.find_breakeven_rent()
 
-        print(f"expenses: ${self.monthly_expenses()} / month\n")
-
         return {
             "cashflow": self.cashflow(),
+            "ROI": self.roi_as_pct(),
             "recoup_time": self.time_to_recoup(),
+            "downpayment_amount": self.down_payment,
+            "rental_income": self.rental_income,
             "expenses": self.monthly_expenses(),
         }
