@@ -3,8 +3,10 @@ import sys
 import requests
 from typing import List
 
+from dataclasses import dataclass, field
 from dotenv import load_dotenv
 from urllib.parse import urlparse, ParseResult
+from realestate import TaxRates
 
 load_dotenv()
 apikey = os.getenv("apikey")
@@ -17,6 +19,26 @@ get_price_info_url = os.getenv("get_price_info_url")
 
 
 headers = {"X-RapidAPI-Key": apikey, "X-RapidAPI-Host": apihost}
+
+
+@dataclass
+class RedFin:
+    propertyId: str = field(default_factory=str)
+    price: str = field(default_factory=str)
+    mlsDescription: dict = field(default_factory={})
+    eventDescription: dict = field(default_factory={})
+    taxInfo: dict = field(default_factory={})
+    houseinfo: dict = field(default_factory={})
+    address: List = field(default_factory=[])
+    taxrate: float = 0.0
+
+    def __post_init__(self):
+        self.property_type = self.houseinfo["propertyTypeName"]
+        if self.property_type == "Single Family Residential":
+            self.property_type = "single"
+        elif self.property_type == "Multi-Family (2-4 Unit)":
+            self.property_type = "multi"
+
 
 # def lookup_properties_by_address(address):
 
@@ -50,7 +72,6 @@ def _fetch_from_url(propertyId) -> requests.models.Response:
     response = requests.request(
         "GET", get_price_info_url, headers=headers, params=querystring
     )
-    print(type(response))
     return response
 
 
@@ -67,6 +88,11 @@ def get_property_details(response) -> dict:
     return houseinfo
 
 
+def get_county(response):
+    county = response.json()["payload"]["publicRecordsInfo"]["countyName"]
+    return county
+
+
 def get_taxes(response) -> dict:
     taxes = response.json()["payload"]["publicRecordsInfo"]["taxInfo"]
     return taxes
@@ -74,7 +100,6 @@ def get_taxes(response) -> dict:
 
 def fetch_data_with_url(url: str) -> dict:
     url = urlparse(url)
-    assert "redfin" in url.netloc  # supporting only redfin for now
     metadata = {}
     address = _get_address_from_url(url)
     propertyId = _get_property_id_from_url(url)
@@ -86,16 +111,17 @@ def fetch_data_with_url(url: str) -> dict:
     price, mlsDescription, eventDescription = get_price_info(response)
     houseinfo = get_property_details(response)
     taxInfo = get_taxes(response)
-    metadata.update(
-        {
-            "isRedfinUrl": "redfin" in url.netloc,
-            "address": address,
-            "propertyId": propertyId,
-            "price": price,
-            "mlsDescription": mlsDescription,
-            "eventDescription": eventDescription,
-            "taxInfo": taxInfo,
-            "houseinfo": houseinfo,
-        }
-    )
-    return metadata
+    county = get_county(response)
+
+    if "redfin" in url.netloc:
+
+        return RedFin(
+            propertyId=propertyId,
+            price=price,
+            mlsDescription=mlsDescription,
+            eventDescription=eventDescription,
+            taxInfo=taxInfo,
+            houseinfo=houseinfo,
+            address=address,
+            taxrate=TaxRates(county, address[0]).taxrate,
+        )
