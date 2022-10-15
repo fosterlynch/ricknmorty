@@ -132,11 +132,11 @@ class House(Webvalues, Utilities):
             except AssertionError:
                 print("Warning: Rental property income is 0, this isn't good.")
 
-        self.capex = self.rental_income * Percents.capex
-        self.mgmt_fees = self.rental_income * Percents.mgmt
-        self.repairs = self.rental_income * Percents.repairs
-        self.misc_expenses = self.rental_income * Percents.misc_ex
-        self.vacancy = self.rental_income * Percents.vacancy
+        self.capex = round(self.rental_income * Percents.capex, 2)
+        self.mgmt_fees = round(self.rental_income * Percents.mgmt, 2)
+        self.repairs = round(self.rental_income * Percents.repairs, 2)
+        self.misc_expenses = round(self.rental_income * Percents.misc_ex, 2)
+        self.vacancy = round(self.rental_income * Percents.vacancy, 2)
 
         # tenant pays these
         self.water_sewer = 0
@@ -150,22 +150,28 @@ class House(Webvalues, Utilities):
         self.set_monthly_mortgage(down_payment_pct=self.down_payment_pct)
 
         if self.property_type == "single":
-            self.capex = self.monthly_payment * Percents.capex
+            self.capex = round(self.monthly_payment * Percents.capex, 2)
             self.mgmt_fees = 0  # I live there, there is no management fee
-            self.misc_expenses = self.monthly_payment * Percents.misc_ex
-            self.repairs = self.monthly_payment * Percents.repairs
+            self.misc_expenses = round(
+                self.monthly_payment * Percents.misc_ex, 2
+            )
+            self.repairs = round(self.monthly_payment * Percents.repairs, 2)
             self.vacancy = 0  # I live there, there is no management fee
 
         if self.property_type == "multi":
             # year one while i live there, my rent is reduced, year two my mortgage is still low, but my rent increases
 
-            self.capex = self.rental_income * Percents.capex
-            self.mgmt_fees = self.rental_income * Percents.mgmt
-            self.misc_expenses = self.rental_income * Percents.misc_ex
-            self.repairs = self.rental_income * Percents.repairs
-            self.vacancy = self.rental_income * Percents.vacancy
+            self.capex = round(
+                self.rental_income * Percents.capex, 2
+            )  # if this is zero, then it is wrong
+            self.mgmt_fees = round(self.rental_income * Percents.mgmt, 2)
+            self.misc_expenses = round(
+                self.rental_income * Percents.misc_ex, 2
+            )
+            self.repairs = round(self.rental_income * Percents.repairs, 2)
+            self.vacancy = round(self.rental_income * Percents.vacancy, 2)
 
-    def set_monthly_mortgage(self, down_payment_pct: float):
+    def set_monthly_mortgage(self, down_payment_pct):
         """
         Compute monthly mortgage based on down payment percent, list price,
         and some internal variables inside Loan package
@@ -174,7 +180,7 @@ class House(Webvalues, Utilities):
         Args:
             down_payment_pct (float): _description_
         """
-        self.down_payment = self.list_price * down_payment_pct
+        self.down_payment = self.list_price * self.down_payment_pct
         self.principal_amount = self.list_price - self.down_payment
         self.loan = Loan(
             principal=self.principal_amount,
