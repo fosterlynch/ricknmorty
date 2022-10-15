@@ -19,11 +19,11 @@ RUN pip3 install pytest
 
 
 WORKDIR ./explore
-# COPY .env ./
+COPY .env ./
 COPY mortgage.ipynb ./
 COPY pull_data.py ./
 COPY testme.py ./
 COPY realestate.py ./
-
+COPY api.py ./
 # COPY tests/ tests/
 # RUN python3 -m pytest tests
