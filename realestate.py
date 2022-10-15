@@ -1,7 +1,15 @@
+from sqlite3 import register_converter
 from typing import List
 from mortgage import Loan
 from dataclasses import dataclass, field
-import matplotlib.pyplot as plt
+
+
+class TaxRates:
+    def __init__(self, county, state):
+        self.county = county
+        self.state = state
+        if self.county == "Monroe County" and self.state == "NY":
+            self.taxrate = 0.0316
 
 
 @dataclass
