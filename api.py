@@ -12,11 +12,9 @@ load_dotenv()
 apikey = os.getenv("apikey")
 apihost = os.getenv("apihost")
 initial_url = os.getenv("initial_url")
-address = os.getenv("address")
-headers = os.getenv("headers")
+# address = os.getenv("address")
 get_main_info_url = os.getenv("get_main_info_url")
 get_price_info_url = os.getenv("get_price_info_url")
-
 
 headers = {"X-RapidAPI-Key": apikey, "X-RapidAPI-Host": apihost}
 
@@ -77,6 +75,7 @@ def _fetch_from_url(propertyId) -> requests.models.Response:
 
 def get_price_info(response):
     payload = response.json()["payload"]["propertyHistoryInfo"]["events"][0]
+    print(payload)
     price = payload["price"]
     mlsDescription = payload["mlsDescription"]
     eventDescription = payload["eventDescription"]
@@ -98,9 +97,8 @@ def get_taxes(response) -> dict:
     return taxes
 
 
-def fetch_data_with_url(url: str) -> dict:
+def fetch_data_with_url(url: str):
     url = urlparse(url)
-    metadata = {}
     address = _get_address_from_url(url)
     propertyId = _get_property_id_from_url(url)
     response = _fetch_from_url(propertyId)
@@ -112,7 +110,8 @@ def fetch_data_with_url(url: str) -> dict:
     houseinfo = get_property_details(response)
     taxInfo = get_taxes(response)
     county = get_county(response)
-
+    print("DEBUG:", county)
+    print("DEBUG:", address)
     if "redfin" in url.netloc:
 
         return RedFin(

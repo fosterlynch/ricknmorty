@@ -8,9 +8,11 @@ class TaxRates:
     def __init__(self, county, state):
         self.county = county
         self.state = state
+
         if self.county == "Monroe County" and self.state == "NY":
             self.taxrate = 0.0316
-
+        if self.county == "King County" and self.state == "WA":
+            self.taxrate == .0105
 
 @dataclass
 class Percents:
