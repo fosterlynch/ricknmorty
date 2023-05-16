@@ -12,7 +12,6 @@ load_dotenv()
 apikey = os.getenv("apikey")
 apihost = os.getenv("apihost")
 initial_url = os.getenv("initial_url")
-# address = os.getenv("address")
 get_main_info_url = os.getenv("get_main_info_url")
 get_price_info_url = os.getenv("get_price_info_url")
 
@@ -28,7 +27,7 @@ class RedFin:
     taxInfo: dict = field(default_factory={})
     houseinfo: dict = field(default_factory={})
     address: List = field(default_factory=[])
-    taxrate: float = 0.0
+    county: str = field(default_factory=str)
 
     def __post_init__(self):
         self.property_type = self.houseinfo["propertyTypeName"]
@@ -67,8 +66,10 @@ def _get_property_id_from_url(url: ParseResult) -> str:
 
 def _fetch_from_url(propertyId) -> requests.models.Response:
     querystring = {"propertyId": propertyId, "listingId": propertyId}
-    response = requests.request(
-        "GET", get_price_info_url, headers=headers, params=querystring
+    print(querystring)
+
+    response = requests.get(
+        get_price_info_url, headers=headers, params=querystring
     )
     return response
 
@@ -104,16 +105,14 @@ def fetch_data_with_url(url: str):
     response = _fetch_from_url(propertyId)
     try:
         assert response.status_code == 200
-    except AssertionError as err:
+    except AssertionError as err:  #
+        print(err)
         sys.exit(err)
     price, mlsDescription, eventDescription = get_price_info(response)
     houseinfo = get_property_details(response)
     taxInfo = get_taxes(response)
     county = get_county(response)
-    print("DEBUG:", county)
-    print("DEBUG:", address)
     if "redfin" in url.netloc:
-
         return RedFin(
             propertyId=propertyId,
             price=price,
@@ -122,5 +121,5 @@ def fetch_data_with_url(url: str):
             taxInfo=taxInfo,
             houseinfo=houseinfo,
             address=address,
-            taxrate=TaxRates(county, address[0]).taxrate,
+            county=county,
         )

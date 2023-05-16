@@ -4,17 +4,6 @@ from mortgage import Loan
 from dataclasses import dataclass, field
 
 
-class TaxRates:
-    def __init__(self, county, state):
-        self.county = county
-        self.state = state
-
-        if self.county == "Monroe County" and self.state == "NY":
-            self.taxrate = 0.0316
-        if self.county == "King County" and self.state == "WA":
-            self.taxrate == .0105
-
-@dataclass
 class Percents:
     """default percents to estimate expenses that are variable to rental income"""
 
@@ -41,7 +30,7 @@ class Utilities:
 
 @dataclass
 class Webvalues:
-    """These values will be specified by the user, these are the most important """
+    """These values will be specified by the user, these are the most important"""
 
     list_price: int
     rentroll: List = field(default_factory=lambda: [0])  # init = false?
@@ -95,7 +84,6 @@ class House(Webvalues, Utilities):
         self.set_income_and_expenses()
 
     def set_income_and_expenses(self):
-
         self.set_income(
             self._webvalues.rentroll,
             self._webvalues.investment_type,
@@ -268,7 +256,6 @@ class House(Webvalues, Utilities):
         )
 
     def run_scenarios(self):
-
         for investment_type in ["pure_investment", "house_hack"]:
             self.investment_type = investment_type
             self.set_income(
@@ -279,7 +266,6 @@ class House(Webvalues, Utilities):
         self.set_income_and_expenses()
 
     def analyze(self, verbose=False):
-
         print("starting analysis --------")
         print("-------------------")
 
