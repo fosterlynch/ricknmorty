@@ -1,4 +1,5 @@
 import sqlite3
+import logging
 
 
 def create_tax_database():
@@ -31,6 +32,20 @@ def create_tax_database():
     connection.commit()
     connection.close()
     print("taxrate database created")
+
+
+def update_tax_database(state: str, county: str, taxrate: float):
+    try:
+        assert "County" in county
+    except AssertionError as err:
+        logging.error(err)
+    rowid = state + "-" + county
+    connection = sqlite3.connect("taxrates.sqlite")
+    crsr = connection.cursor()
+    crsr.execute(
+        "INSERT INTO taxrates VALUES (?,?,?,?);",
+        (rowid, state, county, taxrate),
+    )
 
 
 def create_retry_database():

@@ -2,9 +2,6 @@ import sqlite3
 from api import RedFin
 import logging
 
-# logger = logging.basicConfig()
-# logger.getLogger().setLevel(logging.DEBUG)
-
 
 def find_tax_rate(connection, redfin: RedFin):
     """get country and state from redfin class, see if that entry exists in the database
@@ -21,9 +18,9 @@ def find_tax_rate(connection, redfin: RedFin):
         (redfin.address[0], redfin.county),
     ).fetchall()
     if taxrate == []:
-        # logger.WARNING(
-        #     "no tax information found, saving url for later retries in retry.sqlite"
-        # )
+        logging.warning(
+            "no tax information found, saving url for later retries in retry.sqlite"
+        )
         save_url_for_retry(redfin)
     return taxrate
 
@@ -31,6 +28,8 @@ def find_tax_rate(connection, redfin: RedFin):
 def save_url_for_retry(redfin):
     connection = sqlite3.connect("retry.sqlite")
     crsr = connection.cursor()
-    crsr.execute("INSERT INTO retry VALUES (?,?);", (redfin.url, "no_tax_rate"))
+    crsr.execute(
+        "INSERT INTO retry VALUES (?,?);", (redfin.url, "no_tax_rate")
+    )
     connection.commit()
     connection.close()
