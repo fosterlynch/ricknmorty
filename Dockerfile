@@ -23,5 +23,8 @@ COPY mortgage.ipynb ./
 COPY testme.py ./
 COPY realestate.py ./
 COPY api.py ./
+COPY taxrates.sqlite ./
+COPY taxes.py ./
+COPY retry.sqlite ./
 # COPY tests/ tests/
 # RUN python3 -m pytest tests

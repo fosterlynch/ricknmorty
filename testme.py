@@ -1,19 +1,23 @@
-from dataclasses import dataclass
-from realestate import House, Webvalues, TaxRates
-from api import fetch_data_with_url
+# from dataclasses import dataclass
+
+# from realestate import House, Webvalues
+# from api import fetch_data_with_url
 from api import RedFin
-
-
+from taxes import find_tax_rate
+import sqlite3
 
 # url = (
 #     "https://www.redfin.com/NY/Rochester/187-Wisconsin-St-14609/home/92816944"
 # )
 # redfin_webdata = fetch_data_with_url(url)
 # print(redfin_webdata)
+# taxrate = find_tax_rate(conn, rf)
+# print(taxrate)
 
 #  get price information -> ```fetch_data_with url````
 # just so i dont have to keep grabbing data off the vpn i've verified its grabbing info fine for now
-RedFin(
+
+rf = RedFin(
     propertyId="92816944",
     price=149900,
     mlsDescription="Active",
@@ -37,12 +41,14 @@ RedFin(
         "propertyLastUpdatedDate": 1683333557722,
         "displayTimeZone": "US/Eastern",
     },
-    address=["NY", "Rochester", "187-Wisconsin-St-14609"],
-    county="Monroe",
+    address=["AZ", "Rochester", "187-Wisconsin-St-14609"],
+    county="Monroe County",
+    url="https://www.redfin.com/NY/Rochester/187-Wisconsin-St-14609/home/92816944",
 )
+conn = sqlite3.connect("taxrates.sqlite")
 
-def get_tax_rate(RedFin):
-
+taxrate = find_tax_rate(conn, rf)
+print(taxrate)
 
 # print(response.json())
 # webvalues = Webvalues(  # why pass it into another dataclass?

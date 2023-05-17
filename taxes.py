@@ -1,47 +1,36 @@
 import sqlite3
+from api import RedFin
+import logging
+
+# logger = logging.basicConfig()
+# logger.getLogger().setLevel(logging.DEBUG)
 
 
-class TaxRates:
-    def __init__(self, county, state):
-        self.county = county
-        self.state = state
-        self.taxrate = 0
+def find_tax_rate(connection, redfin: RedFin):
+    """get country and state from redfin class, see if that entry exists in the database
+    if it does, return the tax rate for downstream expenses estimation
+    if not, figure that out later. # TODO
 
-        if self.county == "Monroe County" and self.state == "NY":
-            self.taxrate = 0.0316
-        if self.county == "King County" and self.state == "WA":
-            self.taxrate = 0.0105
-
-
-init = True
-
-connection = sqlite3.connect("taxrates.sqlite")
-
-if init:
+    Args:
+        connection (_type_): sqlite connection to taxrate database
+        Redfin (_type_): redfin class containing county and state information
+    """
     crsr = connection.cursor()
-    crsr.execute("DROP TABLE taxrates;")
-    sql_command = """CREATE TABLE taxrates (
-    ROWID PRIMARY KEY,
-    state VARCHAR(2),
-    county VARCHAR(20),
-    taxrate FLOAT);"""
+    taxrate = crsr.execute(
+        "SELECT taxrate FROM taxrates WHERE state=(?) AND county=(?)",
+        (redfin.address[0], redfin.county),
+    ).fetchall()
+    if taxrate == []:
+        # logger.WARNING(
+        #     "no tax information found, saving url for later retries in retry.sqlite"
+        # )
+        save_url_for_retry(redfin)
+    return taxrate
 
-    crsr.execute(sql_command)
+
+def save_url_for_retry(redfin):
+    connection = sqlite3.connect("retry.sqlite")
+    crsr = connection.cursor()
+    crsr.execute("INSERT INTO retry VALUES (?,?);", (redfin.url, "no_tax_rate"))
     connection.commit()
-
-# crsr = connection.cursor()
-
-states = ["NY", "WA"]
-counties = ["Monroe County", "King County"]
-taxrates = [0.0316, 0.0105]
-for i in range(2):
-    rowid = states[i] + "-" + counties[i]
-    print(rowid)
-    crsr.execute(
-        "INSERT INTO taxrates VALUES (?,?,?,?);",
-        (rowid, states[i], counties[i], taxrates[i]),
-    )
-
-
-connection.commit()
-connection.close()
+    connection.close()

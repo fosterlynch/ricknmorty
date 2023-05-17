@@ -6,7 +6,6 @@ from typing import List
 from dataclasses import dataclass, field
 from dotenv import load_dotenv
 from urllib.parse import urlparse, ParseResult
-from realestate import TaxRates
 
 load_dotenv()
 apikey = os.getenv("apikey")
@@ -28,6 +27,7 @@ class RedFin:
     houseinfo: dict = field(default_factory={})
     address: List = field(default_factory=[])
     county: str = field(default_factory=str)
+    url: str = field(default_factory=str)
 
     def __post_init__(self):
         self.property_type = self.houseinfo["propertyTypeName"]
@@ -68,9 +68,7 @@ def _fetch_from_url(propertyId) -> requests.models.Response:
     querystring = {"propertyId": propertyId, "listingId": propertyId}
     print(querystring)
 
-    response = requests.get(
-        get_price_info_url, headers=headers, params=querystring
-    )
+    response = requests.get(get_price_info_url, headers=headers, params=querystring)
     return response
 
 
@@ -122,4 +120,5 @@ def fetch_data_with_url(url: str):
             houseinfo=houseinfo,
             address=address,
             county=county,
+            url=url,
         )
