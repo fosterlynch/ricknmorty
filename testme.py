@@ -1,6 +1,7 @@
 # from dataclasses import dataclass
 
-# from realestate import House, Webvalues
+from realestate import House, Webvalues
+
 # from api import fetch_data_with_url
 from api import RedFin
 from taxes import find_tax_rate
@@ -17,7 +18,7 @@ import sqlite3
 #  get price information -> ```fetch_data_with url````
 # just so i dont have to keep grabbing data off the vpn i've verified its grabbing info fine for now
 
-rf = RedFin(
+webdata = RedFin(
     propertyId="92816944",
     price=149900,
     mlsDescription="Active",
@@ -41,31 +42,35 @@ rf = RedFin(
         "propertyLastUpdatedDate": 1683333557722,
         "displayTimeZone": "US/Eastern",
     },
-    address=["AZ", "Rochester", "187-Wisconsin-St-14609"],
+    address=["NY", "Rochester", "187-Wisconsin-St-14609"],
     county="Monroe County",
     url="https://www.redfin.com/NY/Rochester/187-Wisconsin-St-14609/home/92816944",
 )
 conn = sqlite3.connect("taxrates.sqlite")
 
-taxrate = find_tax_rate(conn, rf)
+taxrate = find_tax_rate(conn, webdata)
 print(taxrate)
 
 # print(response.json())
-# webvalues = Webvalues(  # why pass it into another dataclass?
-#     list_price=webdata.price,
-#     property_type=webdata.property_type,
-#     investment_type="house_hack",
-#     rentroll=[0],
-#     insurance=53,
-#     taxes=(webdata.price * 0.4 * webdata.taxrate) / 12,
-#     hoa=0,
-#     interest_rate=0.07,
-# )
+webvalues = Webvalues(  # why pass it into another dataclass?
+    list_price=webdata.price,
+    property_type=webdata.property_type,
+    investment_type="house_hack",
+    rentroll=[0],
+    insurance=53,
+    taxes=(webdata.price * 0.4 * webdata.taxrate) / 12,
+    hoa=0,
+    interest_rate=0.07,
+)
 
-# house = House(webvalues=webvalues)
-# print("cashflow is :", house.cashflow())
-# print("monthly taxes will be", house.taxes)
-# print("loan amount is: ", house.monthly_payment)
-# # print("budgeted expenses are: ", house._get_all_expenses())
-# print("parameters: ", house._webvalues)
-# print("down payment will be:", house.down_payment)
+house = House(webvalues=webvalues)
+"""
+House(income, expenses, investment type)
+
+"""
+print("cashflow is :", house.cashflow())
+print("monthly taxes will be", house.taxes)
+print("loan amount is: ", house.monthly_payment)
+# print("budgeted expenses are: ", house._get_all_expenses())
+print("parameters: ", house._webvalues)
+print("down payment will be:", house.down_payment)

@@ -63,3 +63,9 @@ def create_retry_database():
     connection.commit()
     connection.close()
     print("retry database created")
+
+
+update_tax_database(
+    "AZ",
+    "Maricopa County",
+)
