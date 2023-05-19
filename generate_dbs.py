@@ -3,7 +3,7 @@ import logging
 
 
 def create_tax_database():
-    connection = sqlite3.connect("taxrates.sqlite")
+    connection = sqlite3.connect("./databases/taxrates.sqlite")
     crsr = connection.cursor()
     table = crsr.execute(
         "SELECT name FROM sqlite_master WHERE type='table' AND name='taxrates';"
@@ -40,7 +40,7 @@ def update_tax_database(state: str, county: str, taxrate: float):
     except AssertionError as err:
         logging.error(err)
     rowid = state + "-" + county
-    connection = sqlite3.connect("taxrates.sqlite")
+    connection = sqlite3.connect("./databases/taxrates.sqlite")
     crsr = connection.cursor()
     crsr.execute(
         "INSERT INTO taxrates VALUES (?,?,?,?);",
@@ -49,7 +49,7 @@ def update_tax_database(state: str, county: str, taxrate: float):
 
 
 def create_retry_database():
-    connection = sqlite3.connect("retry.sqlite")
+    connection = sqlite3.connect("./databases/retry.sqlite")
     crsr = connection.cursor()
     table = crsr.execute(
         "SELECT name FROM sqlite_master WHERE type='table' AND name='retry';"
@@ -57,7 +57,7 @@ def create_retry_database():
     if table != []:
         crsr.execute("DROP TABLE retry;")
     sql_command = """CREATE TABLE retry (
-    url PRIMARY KEY,
+    url VARCHAR(50) PRIMARY KEY,
     failure_reason VARCHAR(20));"""
     crsr.execute(sql_command)
     connection.commit()
@@ -65,7 +65,4 @@ def create_retry_database():
     print("retry database created")
 
 
-update_tax_database(
-    "AZ",
-    "Maricopa County",
-)
+update_tax_database("WA", "Spokane County", 0.012)

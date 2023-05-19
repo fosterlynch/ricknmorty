@@ -19,7 +19,7 @@ def find_tax_rate(connection, redfin: RedFin):
     ).fetchall()
     if taxrate == []:
         logging.warning(
-            "no tax information found, saving url for later retries in retry.sqlite"
+            f"no tax information found for {redfin.address[0]} {redfin.county} saving url for later retries in retry.sqlite"
         )
         save_url_for_retry(redfin)
     return taxrate
@@ -28,8 +28,6 @@ def find_tax_rate(connection, redfin: RedFin):
 def save_url_for_retry(redfin):
     connection = sqlite3.connect("retry.sqlite")
     crsr = connection.cursor()
-    crsr.execute(
-        "INSERT INTO retry VALUES (?,?);", (redfin.url, "no_tax_rate")
-    )
+    crsr.execute("INSERT INTO retry VALUES (?,?);", ("{redfin.url}", "no_tax_rate"))
     connection.commit()
     connection.close()

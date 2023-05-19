@@ -7,8 +7,8 @@ a:
 
 	docker run -it \
 	--name=mortgage \
-	mortgage
-	# python3 testme.py
+	mortgage \
+	python3 testme.py
 
 build:
 	docker build --file=Dockerfile \
@@ -17,8 +17,8 @@ build:
 run:
 	docker run -it \
 	--name=mortgage \
-	mortgage
-	# python3 testme.py
+	mortgage \
+	python3 testme.py
 
 save:
 	docker cp <insert docker image here>:explore/mortgage.ipynb ./mortgage.ipynb

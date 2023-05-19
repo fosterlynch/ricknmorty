@@ -1,6 +1,7 @@
 import os
 import sys
 import requests
+import logging
 from typing import List
 
 from dataclasses import dataclass, field
@@ -20,7 +21,7 @@ headers = {"X-RapidAPI-Key": apikey, "X-RapidAPI-Host": apihost}
 @dataclass
 class RedFin:
     propertyId: str = field(default_factory=str)
-    price: str = field(default_factory=str)
+    price: int = field(default_factory=str)
     mlsDescription: dict = field(default_factory={})
     eventDescription: dict = field(default_factory={})
     taxInfo: dict = field(default_factory={})
@@ -66,16 +67,15 @@ def _get_property_id_from_url(url: ParseResult) -> str:
 
 def _fetch_from_url(propertyId) -> requests.models.Response:
     querystring = {"propertyId": propertyId, "listingId": propertyId}
-    print(querystring)
-
+    logging.debug(f"url querystring is {querystring}")
     response = requests.get(get_price_info_url, headers=headers, params=querystring)
     return response
 
 
 def get_price_info(response):
     payload = response.json()["payload"]["propertyHistoryInfo"]["events"][0]
-    print(payload)
-    price = payload["price"]
+    logging.debug(f"json response is {payload}")
+    price = int(payload["price"])
     mlsDescription = payload["mlsDescription"]
     eventDescription = payload["eventDescription"]
     return price, mlsDescription, eventDescription

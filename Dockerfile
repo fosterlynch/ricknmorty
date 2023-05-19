@@ -17,14 +17,12 @@ RUN pip3 install requests beautifulsoup4 python-dotenv
 RUN pip3 install notebook mortgage matplotlib
 RUN pip3 install pytest
 
-WORKDIR ./explore
+WORKDIR ./proj
+
 COPY .env ./
-COPY mortgage.ipynb ./
+COPY /databases ./
 COPY testme.py ./
 COPY realestate.py ./
 COPY api.py ./
-COPY taxrates.sqlite ./
 COPY taxes.py ./
-COPY retry.sqlite ./
-# COPY tests/ tests/
-# RUN python3 -m pytest tests
+COPY devurls.json ./

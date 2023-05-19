@@ -2,6 +2,7 @@ from sqlite3 import register_converter
 from typing import List
 from mortgage import Loan
 from dataclasses import dataclass, field
+import logging
 
 
 class Percents:
@@ -12,9 +13,7 @@ class Percents:
     repairs: float = 0.08
     mgmt: float = 0.1
     vacancy: float = 0.05
-    down_payment_pct: float = (
-        0.03  # this is not an expense, I should move this
-    )
+    down_payment_pct: float = 0.03  # this is not an expense, I should move this
     # somewhere else
 
 
@@ -150,9 +149,7 @@ class House(Webvalues, Utilities):
         if self.property_type == "single":
             self.capex = round(self.monthly_payment * Percents.capex, 2)
             self.mgmt_fees = 0  # I live there, there is no management fee
-            self.misc_expenses = round(
-                self.monthly_payment * Percents.misc_ex, 2
-            )
+            self.misc_expenses = round(self.monthly_payment * Percents.misc_ex, 2)
             self.repairs = round(self.monthly_payment * Percents.repairs, 2)
             self.vacancy = 0  # I live there, there is no management fee
 
@@ -163,9 +160,7 @@ class House(Webvalues, Utilities):
                 self.rental_income * Percents.capex, 2
             )  # if this is zero, then it is wrong
             self.mgmt_fees = round(self.rental_income * Percents.mgmt, 2)
-            self.misc_expenses = round(
-                self.rental_income * Percents.misc_ex, 2
-            )
+            self.misc_expenses = round(self.rental_income * Percents.misc_ex, 2)
             self.repairs = round(self.rental_income * Percents.repairs, 2)
             self.vacancy = round(self.rental_income * Percents.vacancy, 2)
 
@@ -179,6 +174,10 @@ class House(Webvalues, Utilities):
             down_payment_pct (float): _description_
         """
         self.down_payment = self.list_price * self.down_payment_pct
+        if self.down_payment >= self.max_down_payment:
+            logging.warning(
+                f"price of house would exceed what I can afford \n max down payment is {self.max_down_payment}, but required downpayment is {self.down_payment}"
+            )
         self.principal_amount = self.list_price - self.down_payment
         self.loan = Loan(
             principal=self.principal_amount,
@@ -243,24 +242,18 @@ class House(Webvalues, Utilities):
         self.rental_income = original_rent
 
         if self.rental_income != 0:
-            pct_different = (
-                (rental_increase - original_rent) / original_rent
-            ) * 100
+            pct_different = ((rental_increase - original_rent) / original_rent) * 100
 
             print(
                 f"additional rent required rent to cover mortgage is ${rental_increase} which is an {pct_different}% increase"
             )
 
-        print(
-            f"Required rent to cover costs is {self.rental_income + rental_increase}"
-        )
+        print(f"Required rent to cover costs is {self.rental_income + rental_increase}")
 
     def run_scenarios(self):
         for investment_type in ["pure_investment", "house_hack"]:
             self.investment_type = investment_type
-            self.set_income(
-                self.rentroll, self.investment_type, self.property_type
-            )
+            self.set_income(self.rentroll, self.investment_type, self.property_type)
             self.set_expenses_by_type(self.investment_type, self.property_type)
             self.analyze()
         self.set_income_and_expenses()
