@@ -188,7 +188,8 @@ class House(Webvalues, Utilities):
         )
         self.monthly_payment = float(self.loan.monthly_payment)
 
-    def _get_all_expenses(self):
+    @property
+    def expenses(self):
         return {
             "capex": self.capex,
             "mgmt": self.mgmt_fees,
@@ -206,19 +207,23 @@ class House(Webvalues, Utilities):
             "monthly_payment": self.monthly_payment,
         }
 
+    @property
     def monthly_expenses(self):
-        return sum(self._get_all_expenses().values())
+        return sum(self.expenses.values())
 
     @property
     def cashflow(self):
-        return round(float(self.rental_income - self.monthly_expenses()), 2)
+        return round(float(self.rental_income - self.monthly_expenses), 2)
 
+    @property
     def roi_as_pct(self):
         return round((self.cashflow * 12) / self.down_payment, 2) * 100
 
+    @property
     def covers_mortgage(self):
         return self.rental_income >= (self.monthly_payment + self.taxes)
 
+    @property
     def time_to_recoup(self):
         """compute the total time before I gain my investment back in months"""
 
@@ -238,7 +243,7 @@ class House(Webvalues, Utilities):
         """
         original_rent = self.rental_income
 
-        while self.covers_mortgage() == False:
+        while self.covers_mortgage == False:
             self.rental_income += 1
 
         rental_increase = self.rental_income
@@ -275,8 +280,8 @@ class House(Webvalues, Utilities):
             f"property is type'{self.investment_type}' type scenario on {self.property_type} property"
         )
         print(f"cashflow: ${self.cashflow} / month")
-        print(f"return on investment: {self.roi_as_pct()} %")
-        print(f"time to recoup investment: {self.time_to_recoup()}\n")
+        print(f"return on investment: {self.roi_as_pct} %")
+        print(f"time to recoup investment: {self.time_to_recoup}\n")
 
         print(
             f"Required down payment using {self.down_payment_pct * 100}% down: ${self.down_payment} down\n"
@@ -286,13 +291,13 @@ class House(Webvalues, Utilities):
         print(f"rent covers mortgage: {self.covers_mortgage()}\n")
         print(f"expenses: ${self.monthly_expenses()} / month\n")
 
-        if self.covers_mortgage() == False:
+        if self.covers_mortgage == False:
             self.find_breakeven_rent()
 
         return {
             "cashflow": self.cashflow,
-            "ROI": self.roi_as_pct(),
-            "recoup_time": self.time_to_recoup(),
+            "ROI": self.roi_as_pct,
+            "recoup_time": self.time_to_recoup,
             "downpayment_amount": self.down_payment,
             "rental_income": self.rental_income,
             "expenses": self.monthly_expenses(),
