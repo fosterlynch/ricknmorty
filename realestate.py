@@ -288,7 +288,7 @@ class House(Webvalues, Utilities):
         )
 
         print(f"rental income: {self.rental_income} $ / month\n")
-        print(f"rent covers mortgage: {self.covers_mortgage()}\n")
+        print(f"rent covers mortgage: {self.covers_mortgage}\n")
         print(f"expenses: ${self.monthly_expenses()} / month\n")
 
         if self.covers_mortgage == False:
