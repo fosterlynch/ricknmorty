@@ -13,10 +13,6 @@ class Percents:
     repairs: float = 0.08
     mgmt: float = 0.1
     vacancy: float = 0.05
-    down_payment_pct: float = (
-        0.03  # this is not an expense, I should move this
-    )
-    # somewhere else
 
 
 @dataclass
