@@ -289,7 +289,7 @@ class House(Webvalues, Utilities):
 
         print(f"rental income: {self.rental_income} $ / month\n")
         print(f"rent covers mortgage: {self.covers_mortgage}\n")
-        print(f"expenses: ${self.monthly_expenses()} / month\n")
+        print(f"expenses: ${self.monthly_expenses} / month\n")
 
         if self.covers_mortgage == False:
             self.find_breakeven_rent()
@@ -300,5 +300,5 @@ class House(Webvalues, Utilities):
             "recoup_time": self.time_to_recoup,
             "downpayment_amount": self.down_payment,
             "rental_income": self.rental_income,
-            "expenses": self.monthly_expenses(),
+            "expenses": self.monthly_expenses,
         }
