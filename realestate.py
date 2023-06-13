@@ -1,4 +1,3 @@
-from sqlite3 import register_converter
 from typing import List
 from mortgage import Loan
 from dataclasses import dataclass, field
