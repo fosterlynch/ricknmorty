@@ -1,5 +1,4 @@
 import os
-import sys
 import requests
 import logging
 from typing import List
@@ -22,7 +21,7 @@ headers = {"X-RapidAPI-Key": apikey, "X-RapidAPI-Host": apihost}
 class RedFin:
     propertyId: str = field(default_factory=str)
     price: int = field(default_factory=str)
-    mlsDescription: dict = field(default_factory={})
+    # mlsDescription: dict = field(default_factory={})
     eventDescription: dict = field(default_factory={})
     taxInfo: dict = field(default_factory={})
     houseinfo: dict = field(default_factory={})
@@ -38,25 +37,6 @@ class RedFin:
             self.property_type = "multi"
 
 
-# def lookup_properties_by_address(address):
-
-#     querystring = {"location": address}
-
-#     response = requests.request(
-#         "GET", initial_url, headers=headers, params=querystring
-#     )
-
-#     propertyId = response.json()["payload"]["exactMatch"]["id"]
-#     propertyId = propertyId.split("_")[1]
-
-#     querystring = {"propertyId": propertyId, "listingId": propertyId}
-
-#     response = requests.request(
-#         "GET", get_main_info_url, headers=headers, params=querystring
-#     )
-#     return response.json()["payload"]
-
-
 def _get_address_from_url(url: ParseResult) -> List:
     return url.path.split("/")[1:4]
 
@@ -68,17 +48,22 @@ def _get_property_id_from_url(url: ParseResult) -> str:
 def _fetch_from_url(propertyId) -> requests.models.Response:
     querystring = {"propertyId": propertyId, "listingId": propertyId}
     logging.debug(f"url querystring is {querystring}")
-    response = requests.get(get_price_info_url, headers=headers, params=querystring)
+    response = requests.get(
+        get_price_info_url, headers=headers, params=querystring
+    )
     return response
 
 
 def get_price_info(response):
+    print(
+        response.json()["payload"]["propertyHistoryInfo"]["events"][0].keys()
+    )
     payload = response.json()["payload"]["propertyHistoryInfo"]["events"][0]
     logging.debug(f"json response is {payload}")
     price = int(payload["price"])
-    mlsDescription = payload["mlsDescription"]
+    # mlsDescription = payload["mlsDescription"]
     eventDescription = payload["eventDescription"]
-    return price, mlsDescription, eventDescription
+    return price, eventDescription
 
 
 def get_property_details(response) -> dict:
@@ -96,7 +81,7 @@ def get_taxes(response) -> dict:
     return taxes
 
 
-def fetch_data_with_url(url: str):
+def fetch_data_with_url(url: str) -> RedFin:
     url = urlparse(url)
     address = _get_address_from_url(url)
     propertyId = _get_property_id_from_url(url)
@@ -106,7 +91,7 @@ def fetch_data_with_url(url: str):
     except AssertionError as err:  #
         print(err)
         sys.exit(err)
-    price, mlsDescription, eventDescription = get_price_info(response)
+    price, eventDescription = get_price_info(response)
     houseinfo = get_property_details(response)
     taxInfo = get_taxes(response)
     county = get_county(response)
@@ -114,7 +99,7 @@ def fetch_data_with_url(url: str):
         return RedFin(
             propertyId=propertyId,
             price=price,
-            mlsDescription=mlsDescription,
+            # mlsDescription=mlsDescription,
             eventDescription=eventDescription,
             taxInfo=taxInfo,
             houseinfo=houseinfo,
