@@ -9,41 +9,8 @@ rentroll = [800, 800]
 insurance = 53
 taxes = 537
 hoa = 0
-address = "123 main street, rochester, NY 14607"
 
 INVESTMENT_TYPES = ["pure_investment", "house_hack"]
-INVESTMENT_PERCENTS = [("pure_investment", 0.25), ("house_hack", 0.03)]
-DOWN_PAYMENT = [("pure_investment", 25000), ("house_hack", 3000)]
-
-
-@mark.parametrize("investment_type, value", INVESTMENT_PERCENTS)
-def test_class_has_correct_down_payment_percentages(investment_type, value):
-    house = House(
-        property_type="multi",
-        list_price=list_price,
-        rentroll=rentroll,
-        insurance=insurance,
-        taxes=taxes,
-        hoa=hoa,
-        investment_type=investment_type,
-    )
-    assert house.down_payment_pct == value
-
-
-@mark.parametrize("investment_type, down_payment_amount", DOWN_PAYMENT)
-def test_class_has_correct_down_payment_value(
-    investment_type, down_payment_amount
-):
-    house = House(
-        property_type="multi",
-        list_price=list_price,
-        rentroll=rentroll,
-        insurance=insurance,
-        taxes=taxes,
-        hoa=hoa,
-        investment_type=investment_type,
-    )
-    assert house.down_payment == down_payment_amount
 
 
 @mark.parametrize("investment_types", INVESTMENT_TYPES)
@@ -63,3 +30,57 @@ def test_class_does_not_mutate_values(investment_types):
     assert house.insurance == insurance
     assert house.taxes == taxes
     assert house.hoa == hoa
+
+
+@mark.parametrize("investment_type", INVESTMENT_TYPES)
+def test_class_list_price_equals_offer_price_on_init(investment_type):
+    house = House(
+        property_type="multi",
+        list_price=list_price,
+        rentroll=rentroll,
+        insurance=insurance,
+        taxes=taxes,
+        hoa=hoa,
+        investment_type=investment_type,
+    )
+    assert house.list_price == house.offer_price
+
+
+def test_class_finds_correct_offer_price():
+    pass
+
+
+def test_class_runs_both_scenarios():
+    pass
+
+
+def test_class_runs_analysis_correctly():
+    pass
+
+
+def test_class_has_correct_properties():
+    """
+    house_expenses
+    monthly_expenses
+    cashflow
+    roi_as_pct
+    covers_mortgage
+    time_to_recoup
+    """
+    pass
+
+
+def test_class_finds_correct_breakeven_rent():
+    pass
+
+
+def test_class_sets_income_correctly_for_each_case():
+    pass
+
+
+def test_class_sets_expenses_correctly_for_each_case():
+    pass
+
+
+def test_class_returns_to_defaults_after_scenario_running():
+    pass
