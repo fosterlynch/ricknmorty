@@ -12,12 +12,12 @@ hoa = 0
 address = "123 main street, rochester, NY 14607"
 
 INVESTMENT_TYPES = ["pure_investment", "house_hack"]
-INVESTMENT_PERCENTS = {"pure_investment": 0.25, "house_hack": 0.03}
-DOWN_PAYMENT = {"pure_investment": 25000, "house_hack": 3000}
+INVESTMENT_PERCENTS = [("pure_investment", 0.25), ("house_hack", 0.03)]
+DOWN_PAYMENT = [("pure_investment", 25000), ("house_hack", 3000)]
 
 
-@mark.parameterize(percents)
-def test_class_has_correct_down_payment_percentages():
+@mark.parametrize("investment_type, value", INVESTMENT_PERCENTS)
+def test_class_has_correct_down_payment_percentages(investment_type, value):
     house = House(
         property_type="multi",
         list_price=list_price,
@@ -25,23 +25,25 @@ def test_class_has_correct_down_payment_percentages():
         insurance=insurance,
         taxes=taxes,
         hoa=hoa,
-        investment_type=key,
+        investment_type=investment_type,
     )
-    assert house.down_payment_pct == val
+    assert house.down_payment_pct == value
 
 
-# @mark.parameterize()
-# def test_class_has_correct_down_payment_value():
-#     house = House(
-#         property_type="multi",
-#         list_price=list_price,
-#         rentroll=rentroll,
-#         insurance=insurance,
-#         taxes=taxes,
-#         hoa=hoa,
-#         investment_type=key,
-#     )
-#     assert house.down_payment == val
+@mark.parametrize("investment_type, down_payment_amount", DOWN_PAYMENT)
+def test_class_has_correct_down_payment_value(
+    investment_type, down_payment_amount
+):
+    house = House(
+        property_type="multi",
+        list_price=list_price,
+        rentroll=rentroll,
+        insurance=insurance,
+        taxes=taxes,
+        hoa=hoa,
+        investment_type=investment_type,
+    )
+    assert house.down_payment == down_payment_amount
 
 
 @mark.parametrize("investment_types", INVESTMENT_TYPES)
