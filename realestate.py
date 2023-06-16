@@ -29,7 +29,7 @@ class Utilities:
 @dataclass
 class Expenses(Utilities):
     insurance: int = 100
-    taxes: int = 100
+    # taxes: int = 100
     hoa: int = 0
     lawn: int = 50
     mortgage_payment: int = 1500
@@ -45,6 +45,7 @@ class HouseValues:
     """These values will be specified by the user,
     these are the most important"""
 
+    tax_rate: float
     list_price: int = 100
     rentroll: List = field(default_factory=lambda: [0])  # init = false?
     property_type: str = "single"
@@ -65,10 +66,10 @@ class House(HouseValues, Expenses):
 
     def __init__(
         self,
-        list_price: int,
+        tax_rate: float,
+        list_price: int = 100000,
         rentroll: List = field(default_factory=lambda: [0]),
         insurance: int = 100,
-        taxes: int = 100,
         hoa: int = 0,
         property_type: str = "single",
         investment_type: str = "house_hack",
@@ -76,13 +77,14 @@ class House(HouseValues, Expenses):
     ):
         HouseValues.__init__(
             self,
+            tax_rate,
             list_price,
             rentroll,
             property_type,
             investment_type,
             max_down_payment,
         )
-        Expenses.__init__(self, insurance=insurance, taxes=taxes, hoa=hoa)
+        Expenses.__init__(self, insurance=insurance, hoa=hoa)
         self.debug = False
         self.offer_price = self.list_price
         self.set_income_and_expenses()
@@ -106,6 +108,7 @@ class House(HouseValues, Expenses):
             if property_type == "multi":
                 effective_rent = min(rentroll)
                 self.rental_income = sum(rentroll) - effective_rent
+                self.n_units = len(self.rentroll) - 1
         else:
             self.rental_income = sum(rentroll)
 
@@ -122,6 +125,7 @@ class House(HouseValues, Expenses):
             investment_type (_type_): _description_
             property_type (_type_): _description_
         """
+        self.calculate_monthly_property_taxes()
         if investment_type == "pure_investment":
             self.set_expenses_investment()
 
@@ -197,10 +201,13 @@ class House(HouseValues, Expenses):
         )
         self.mortgage_payment = float(self.loan.monthly_payment)
 
+    def calculate_monthly_property_taxes(self):
+        self.taxes = round((self.offer_price * 0.6 * self.tax_rate) / 12, 2)
+
     def find_offer_price(self):
         print("finding offer price")
         while self.cashflow < (100 * self.n_units):
-            self.offer_price -= 10
+            self.offer_price -= 50
             self.set_income_and_expenses()
         print(
             f"offer price should be {self.offer_price} which is {round(((self.offer_price - self.list_price)/self.list_price) * 100,2)} different from original list price"
@@ -226,7 +233,7 @@ class House(HouseValues, Expenses):
             self.find_breakeven_rent()
 
         print(
-            f"property is type'{self.investment_type}' type scenario on {self.property_type} property"
+            f"property is type '{self.investment_type}' type scenario on {self.property_type} property"
         )
         print(f"cashflow: ${self.cashflow} / month")
         print(f"return on investment: {self.roi_as_pct} %")
@@ -238,7 +245,7 @@ class House(HouseValues, Expenses):
 
         print(f"rental income: {self.rental_income} $ / month\n")
         print(f"rent covers mortgage: {self.covers_mortgage}\n")
-        print(f"expenses: ${self.monthly_expenses} / month\n")
+        print(f"expenses: ${self.house_expenses} / month\n")
 
         return {
             "cashflow": self.cashflow,
@@ -270,7 +277,7 @@ class House(HouseValues, Expenses):
 
     @property
     def monthly_expenses(self):
-        return sum(self.house_expenses.values())
+        return round(sum(self.house_expenses.values()), 2)
 
     @property
     def cashflow(self):
@@ -298,8 +305,8 @@ class House(HouseValues, Expenses):
 
     def find_breakeven_rent(self):
         """
-        Given current rental income, find how much rent would need to be charged
-        in order to cover taxes and morgage.
+        Given current rental income, find how much rent
+        would need to be charged in order to cover taxes and morgage.
 
         """
         original_rent = self.rental_income
@@ -316,9 +323,9 @@ class House(HouseValues, Expenses):
             ) * 100
 
             print(
-                f"additional rent required rent to cover mortgage is ${rental_increase} which is an {pct_different}% increase"
+                f"additional rent required rent to cover mortgage is ${rental_increase} which is an {pct_different}% increase"  # noqa: E501
             )
 
         print(
-            f"Required rent to cover costs is {self.rental_income + rental_increase}"
+            f"Required rent to cover costs is {self.rental_income + rental_increase}"  # noqa: E501
         )
