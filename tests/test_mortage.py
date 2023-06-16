@@ -7,7 +7,8 @@ investment_type = "house_hack"
 list_price = 100000
 rentroll = [800, 800]
 insurance = 53
-taxes = 537
+county = "Monroe County"
+tax_rate = 0.0316
 hoa = 0
 
 
@@ -24,7 +25,7 @@ def test_class_has_correct_monthly_mortgage(investment_type, value):
         list_price=list_price,
         rentroll=rentroll,
         insurance=insurance,
-        taxes=taxes,
+        tax_rate=0.0316,
         hoa=hoa,
         investment_type=investment_type,
     )
@@ -40,7 +41,7 @@ def test_class_has_correct_down_payment_percentages(investment_type, value):
         list_price=list_price,
         rentroll=rentroll,
         insurance=insurance,
-        taxes=taxes,
+        tax_rate=0.0316,
         hoa=hoa,
         investment_type=investment_type,
     )
@@ -56,7 +57,7 @@ def test_class_has_correct_down_payment_value(
         list_price=list_price,
         rentroll=rentroll,
         insurance=insurance,
-        taxes=taxes,
+        tax_rate=0.0316,
         hoa=hoa,
         investment_type=investment_type,
     )

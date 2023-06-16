@@ -7,9 +7,10 @@ investment_type = "house_hack"
 list_price = 100000
 rentroll = [800, 800]
 insurance = 53
-taxes = 537
 hoa = 0
-
+county = "Monroe County"
+tax_rate = 0.0316
+taxes = 158
 INVESTMENT_TYPES = ["pure_investment", "house_hack"]
 
 
@@ -20,7 +21,7 @@ def test_class_does_not_mutate_values(investment_types):
         list_price=list_price,
         rentroll=rentroll,
         insurance=insurance,
-        taxes=taxes,
+        tax_rate=tax_rate,
         hoa=hoa,
         investment_type=investment_types,
     )
@@ -39,7 +40,7 @@ def test_class_list_price_equals_offer_price_on_init(investment_type):
         list_price=list_price,
         rentroll=rentroll,
         insurance=insurance,
-        taxes=taxes,
+        tax_rate=tax_rate,
         hoa=hoa,
         investment_type=investment_type,
     )
