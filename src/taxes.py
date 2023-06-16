@@ -22,12 +22,14 @@ def find_tax_rate(connection, redfin: RedFin):
             f"no tax information found for {redfin.address[0]} {redfin.county} saving url for later retries in retry.sqlite"
         )
         save_url_for_retry(redfin)
-    return taxrate
+    return taxrate[0][0]
 
 
 def save_url_for_retry(redfin):
     connection = sqlite3.connect("retry.sqlite")
     crsr = connection.cursor()
-    crsr.execute("INSERT INTO retry VALUES (?,?);", ("{redfin.url}", "no_tax_rate"))
+    crsr.execute(
+        "INSERT INTO retry VALUES (?,?);", ("{redfin.url}", "no_tax_rate")
+    )
     connection.commit()
     connection.close()

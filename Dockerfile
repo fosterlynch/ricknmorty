@@ -20,10 +20,7 @@ WORKDIR ./proj
 
 # COPY .env ./
 COPY /databases ./
-COPY testme.py ./
-COPY realestate.py ./
-COPY api.py ./
-COPY taxes.py ./
+COPY ./src .
 COPY devurls.json ./
 
 COPY ./tests ./tests
