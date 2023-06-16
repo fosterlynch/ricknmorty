@@ -13,10 +13,9 @@ RUN apt-get update && \
     python3.10-distutils \
     python3-pip
 
-RUN pip3 install requests beautifulsoup4 python-dotenv
+RUN pip3 install requests python-dotenv
 RUN pip3 install notebook mortgage matplotlib
 RUN pip3 install pytest
-
 WORKDIR ./proj
 
 COPY .env ./
@@ -26,3 +25,6 @@ COPY realestate.py ./
 COPY api.py ./
 COPY taxes.py ./
 COPY devurls.json ./
+
+COPY ./tests ./tests
+RUN python3 -m pytest . -v
