@@ -29,7 +29,6 @@ class Utilities:
 @dataclass
 class Expenses(Utilities):
     insurance: int = 100
-    # taxes: int = 100
     hoa: int = 0
     lawn: int = 50
     mortgage_payment: int = 1500

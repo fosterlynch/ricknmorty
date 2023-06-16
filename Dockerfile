@@ -18,7 +18,7 @@ RUN pip3 install notebook mortgage matplotlib
 RUN pip3 install pytest
 WORKDIR ./proj
 
-# COPY .env ./
+COPY .env ./
 COPY /databases ./
 COPY ./src .
 COPY devurls.json ./

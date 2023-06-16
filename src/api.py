@@ -15,6 +15,8 @@ get_main_info_url = os.getenv("get_main_info_url")
 get_price_info_url = os.getenv("get_price_info_url")
 
 headers = {"X-RapidAPI-Key": apikey, "X-RapidAPI-Host": apihost}
+assert get_main_info_url is not None
+assert get_price_info_url is not None
 
 
 @dataclass
