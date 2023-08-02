@@ -1,5 +1,4 @@
 from mortgage import Loan
-import time
 
 
 class HouseExpenses:
@@ -43,33 +42,7 @@ class HouseExpenses:
         self.misc_repair = self.monthly_rent * 0.1
         self.cost_of_vacancy = self.monthly_rent * 0.1
         self.taxes = 500
-        self.expenses3 = sum(  # this one is the best
-            [
-                self.capex,
-                self.cost_of_vacancy,
-                self.hoa_fees,
-                self.insurance_cost,
-                self.lawn_care_cost,
-                self.mgmt_fee,
-                self.wsge,
-                self.misc_repair,
-                self.taxes,
-                self.monthly_mortgage,
-            ]
-        )
-
-    def expenses(self) -> float:
-        return sum(
-            [
-                val
-                for key, val in self.__dict__.items()
-                if key
-                not in ["price", "monthly_rent", "location", "interest_rate", "loan"]
-            ]
-        )
-
-    def expenses2(self) -> float:
-        return sum(
+        self.expenses = sum(  # this one is the best results were noted in 390ac03ba934e0db24ff4455f70047789e1dd427
             [
                 self.capex,
                 self.cost_of_vacancy,
@@ -87,23 +60,3 @@ class HouseExpenses:
 
 test = HouseExpenses(150000, 1500, "ROC", 0.07)
 expenses = test.expenses()
-
-nit = 10000000
-
-start = time.time()
-for i in range(nit):
-    test.expenses()
-end = time.time()
-print(end - start)  # 24 seconds
-
-start = time.time()
-for i in range(nit):
-    test.expenses2()
-end = time.time()
-print(end - start)  # 6.89 seconds
-
-start = time.time()
-for i in range(nit):
-    test.expenses3
-end = time.time()
-print(end - start)  # 0.7 seconds
