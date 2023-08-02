@@ -1,4 +1,5 @@
 from mortgage import Loan
+import time
 
 
 class HouseExpenses:
@@ -34,7 +35,7 @@ class HouseExpenses:
         self.loan = Loan(
             principal=self.price,
             interest=self.interest_rate,
-            term=360 // 12,
+            term=30,
         )
         self.monthly_mortgage = float(self.loan.monthly_payment)
         self.wsge = 0  # this is only true for separately metered buildings
@@ -42,6 +43,20 @@ class HouseExpenses:
         self.misc_repair = self.monthly_rent * 0.1
         self.cost_of_vacancy = self.monthly_rent * 0.1
         self.taxes = 500
+        self.expenses3 = sum(  # this one is the best
+            [
+                self.capex,
+                self.cost_of_vacancy,
+                self.hoa_fees,
+                self.insurance_cost,
+                self.lawn_care_cost,
+                self.mgmt_fee,
+                self.wsge,
+                self.misc_repair,
+                self.taxes,
+                self.monthly_mortgage,
+            ]
+        )
 
     def expenses(self) -> float:
         return sum(
@@ -53,7 +68,42 @@ class HouseExpenses:
             ]
         )
 
+    def expenses2(self) -> float:
+        return sum(
+            [
+                self.capex,
+                self.cost_of_vacancy,
+                self.hoa_fees,
+                self.insurance_cost,
+                self.lawn_care_cost,
+                self.mgmt_fee,
+                self.wsge,
+                self.misc_repair,
+                self.taxes,
+                self.monthly_mortgage,
+            ]
+        )
+
 
 test = HouseExpenses(150000, 1500, "ROC", 0.07)
 expenses = test.expenses()
-print(expenses)
+
+nit = 10000000
+
+start = time.time()
+for i in range(nit):
+    test.expenses()
+end = time.time()
+print(end - start)  # 24 seconds
+
+start = time.time()
+for i in range(nit):
+    test.expenses2()
+end = time.time()
+print(end - start)  # 6.89 seconds
+
+start = time.time()
+for i in range(nit):
+    test.expenses3
+end = time.time()
+print(end - start)  # 0.7 seconds
