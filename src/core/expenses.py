@@ -42,7 +42,7 @@ class HouseExpenses:
         self.misc_repair = self.monthly_rent * 0.1
         self.cost_of_vacancy = self.monthly_rent * 0.1
         self.taxes = 500
-        self.expenses = sum(  # this one is the best results were noted in 390ac03ba934e0db24ff4455f70047789e1dd427
+        self.expenses = sum(  # this one is the fastest, results were noted in 390ac03ba934e0db24ff4455f70047789e1dd427
             [
                 self.capex,
                 self.cost_of_vacancy,
