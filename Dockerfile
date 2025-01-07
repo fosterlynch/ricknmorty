@@ -1,22 +1,19 @@
-FROM ubuntu:22.04
+# For more information, please refer to https://aka.ms/vscode-docker-python
+FROM python:3.10-slim
 
-ENV DEBIAN_FRONTEND noninteractive
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE=1
 
-RUN apt-get update && \
-    apt-get install -y \
-    software-properties-common \
-    gcc \
-    g++ \
-    python3.10 \
-    python3.10-dev \
-    python3.10-venv \
-    python3.10-distutils \
-    python3-pip
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED=1
 
-RUN pip3 install requests python-dotenv
-RUN pip3 install notebook mortgage matplotlib
-RUN pip3 install pytest
-WORKDIR ./proj
+# Install pip requirements
+COPY requirements.txt .
+RUN python -m pip install -r requirements.txt
+
+WORKDIR /app
+COPY . /app
+
 
 COPY .env ./
 COPY /databases ./
@@ -24,4 +21,12 @@ COPY ./src .
 COPY devurls.json ./
 
 COPY ./tests ./tests
-RUN python3 -m pytest -cov . -vv
+# RUN python3 -m pytest -cov . -vv
+# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
+# Creates a non-root user with an explicit UID and adds permission to access the /app folder
+# For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
+RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
+USER appuser
+
+# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
+CMD ["python", "src/testme.py"]

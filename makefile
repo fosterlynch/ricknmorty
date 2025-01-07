@@ -1,14 +1,10 @@
 a:
-	docker container stop mortgage
-
-	docker container rm mortgage
-
 	docker build --file=Dockerfile --tag mortgage .
 
-	docker run -it \
-	--name=mortgage \
-	mortgage \
-	python3 testme.py
+	# docker run -it \
+	# --name=mortgage \
+	# mortgage 
+	# # python3 testme.py
 
 build:
 	docker build --file=Dockerfile \

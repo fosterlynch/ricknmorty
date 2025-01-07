@@ -59,4 +59,4 @@ class HouseExpenses:
 
 
 test = HouseExpenses(150000, 1500, "ROC", 0.07)
-expenses = test.expenses()
+print(test.expenses)

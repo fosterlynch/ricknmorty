@@ -54,6 +54,7 @@ class HouseValues:
     def __post_init__(self):
         assert self.property_type in ["single", "multi"]
         assert self.investment_type in ["house_hack", "pure_investment"]
+        assert self.financing_type in ["conventional", "all_cash", "seller_financing"]
         self.rental_income = sum(self.rentroll)
         self.n_units = len(self.rentroll)
 
@@ -72,6 +73,7 @@ class House(HouseValues, Expenses):
         hoa: int = 0,
         property_type: str = "single",
         investment_type: str = "house_hack",
+        financing_type: str = "conventional",
         max_down_payment: int = 65000,
     ):
         HouseValues.__init__(
@@ -81,6 +83,7 @@ class House(HouseValues, Expenses):
             rentroll,
             property_type,
             investment_type,
+            financing_type,
             max_down_payment,
         )
         Expenses.__init__(self, insurance=insurance, hoa=hoa)
@@ -100,7 +103,9 @@ class House(HouseValues, Expenses):
             self.investment_type,
             self.property_type,
         )
-        self.set_expenses_by_type(self.investment_type, self.property_type)
+        self.set_expenses_by_type(
+            self.investment_type, self.property_type, self.financing_type
+        )
 
     def set_income(self, rentroll, investment_type, property_type):
         if investment_type == "house_hack":
@@ -111,7 +116,7 @@ class House(HouseValues, Expenses):
         else:
             self.rental_income = sum(rentroll)
 
-    def set_expenses_by_type(self, investment_type, property_type):
+    def set_expenses_by_type(self, investment_type, property_type, financing_type):
         """
         set expenses takes in rental income, investment type, and property type
         and then sets class expense attributes to correct value based on the
@@ -123,37 +128,45 @@ class House(HouseValues, Expenses):
             rental_income (_type_): _description_
             investment_type (_type_): _description_
             property_type (_type_): _description_
+            financing_type (str): either convenional mortgage, all cash, or seller financing
         """
         self.calculate_monthly_property_taxes()
         if investment_type == "pure_investment":
-            self.set_expenses_investment()
+            self.set_expenses_investment(financing_type)
 
         if investment_type == "house_hack":
-            self.set_expenses_house_hack()
+            self.set_expenses_house_hack(financing_type)
 
-    def set_expenses_investment(self):
-        self.down_payment_pct = 0.25
-        self.set_monthly_mortgage(down_payment_pct=self.down_payment_pct)
+    def set_expenses_investment(self, financing_type):
+        if financing_type == "seller_financing":
+            self.down_payment_pct = (
+                self.down_payment_pct
+            )  # TODO: pass in seller financing terms into interface of house class
+            self.num_months = self.num_months
 
-        if self.debug:
-            try:
-                assert self.rental_income != 0
-            except AssertionError:
-                print("Warning: Rental property income is 0, this isn't good.")
+        else:
+            self.down_payment_pct = 0.25
+            self.set_monthly_mortgage(down_payment_pct=self.down_payment_pct)
 
-        self.capex = round(self.rental_income * Percents.capex, 2)
-        self.mgmt_fees = round(self.rental_income * Percents.mgmt, 2)
-        self.repairs = round(self.rental_income * Percents.repairs, 2)
-        self.misc_repairs = round(self.rental_income * Percents.misc_ex, 2)
-        self.vacancy_cost = round(self.rental_income * Percents.vacancy, 2)
+            if self.debug:
+                try:
+                    assert self.rental_income != 0
+                except AssertionError:
+                    print("Warning: Rental property income is 0, this isn't good.")
 
-        # tenant pays these
-        self.water_sewer = 0
-        self.garbage = 0
-        self.electric = 0
-        self.gas = 0
+            self.capex = round(self.rental_income * Percents.capex, 2)
+            self.mgmt_fees = round(self.rental_income * Percents.mgmt, 2)
+            self.repairs = round(self.rental_income * Percents.repairs, 2)
+            self.misc_repairs = round(self.rental_income * Percents.misc_ex, 2)
+            self.vacancy_cost = round(self.rental_income * Percents.vacancy, 2)
 
-    def set_expenses_house_hack(self):
+            # tenant pays these
+            self.water_sewer = 0
+            self.garbage = 0
+            self.electric = 0
+            self.gas = 0
+
+    def set_expenses_house_hack(self, financing_type):
         # personal property, variable expences will be a function of mortgage
         self.down_payment_pct = 0.03
         self.set_monthly_mortgage(down_payment_pct=self.down_payment_pct)
@@ -161,9 +174,7 @@ class House(HouseValues, Expenses):
         if self.property_type == "single":
             self.capex = round(self.mortgage_payment * Percents.capex, 2)
             self.mgmt_fees = 0  # I live there, there is no management fee
-            self.misc_repairs = round(
-                self.mortgage_payment * Percents.misc_ex, 2
-            )
+            self.misc_repairs = round(self.mortgage_payment * Percents.misc_ex, 2)
             self.repairs = round(self.mortgage_payment * Percents.repairs, 2)
             self.vacancy_cost = 0  # I live there, there is no management fee
 
@@ -215,9 +226,7 @@ class House(HouseValues, Expenses):
     def run_scenarios(self):
         for investment_type in ["pure_investment", "house_hack"]:
             self.investment_type = investment_type
-            self.set_income(
-                self.rentroll, self.investment_type, self.property_type
-            )
+            self.set_income(self.rentroll, self.investment_type, self.property_type)
             self.set_expenses_by_type(self.investment_type, self.property_type)
             self.analyze()
         self.set_income_and_expenses()
@@ -317,9 +326,7 @@ class House(HouseValues, Expenses):
         self.rental_income = original_rent
 
         if self.rental_income != 0:
-            pct_different = (
-                (rental_increase - original_rent) / original_rent
-            ) * 100
+            pct_different = ((rental_increase - original_rent) / original_rent) * 100
 
             print(
                 f"additional rent required rent to cover mortgage is ${rental_increase} which is an {pct_different}% increase"  # noqa: E501

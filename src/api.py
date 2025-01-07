@@ -2,7 +2,7 @@ import os
 import requests
 import logging
 from typing import List
-
+import sys
 from dataclasses import dataclass, field
 from dotenv import load_dotenv
 from urllib.parse import urlparse, ParseResult
@@ -23,7 +23,6 @@ assert get_price_info_url is not None
 class RedFin:
     propertyId: str = field(default_factory=str)
     price: int = field(default_factory=str)
-    # mlsDescription: dict = field(default_factory={})
     eventDescription: dict = field(default_factory={})
     taxInfo: dict = field(default_factory={})
     houseinfo: dict = field(default_factory={})
@@ -35,7 +34,7 @@ class RedFin:
         self.property_type = self.houseinfo["propertyTypeName"]
         if self.property_type == "Single Family Residential":
             self.property_type = "single"
-        elif self.property_type == "Multi-Family (2-4 Unit)":
+        elif "Multi-Family" in self.property_type:
             self.property_type = "multi"
 
 
@@ -50,22 +49,21 @@ def _get_property_id_from_url(url: ParseResult) -> str:
 def _fetch_from_url(propertyId) -> requests.models.Response:
     querystring = {"propertyId": propertyId, "listingId": propertyId}
     logging.debug(f"url querystring is {querystring}")
-    response = requests.get(
-        get_price_info_url, headers=headers, params=querystring
-    )
+    response = requests.get(get_price_info_url, headers=headers, params=querystring)
     return response
 
 
 def get_price_info(response):
-    print(
-        response.json()["payload"]["propertyHistoryInfo"]["events"][0].keys()
-    )
+    # print(response.json()["payload"]["propertyHistoryInfo"]["events"][0].keys())
     payload = response.json()["payload"]["propertyHistoryInfo"]["events"][0]
-    logging.debug(f"json response is {payload}")
     price = int(payload["price"])
-    # mlsDescription = payload["mlsDescription"]
+    return price
+
+
+def get_event_description(response):
+    payload = response.json()["payload"]["propertyHistoryInfo"]["events"][0]
     eventDescription = payload["eventDescription"]
-    return price, eventDescription
+    return eventDescription
 
 
 def get_property_details(response) -> dict:
@@ -88,12 +86,18 @@ def fetch_data_with_url(url: str) -> RedFin:
     address = _get_address_from_url(url)
     propertyId = _get_property_id_from_url(url)
     response = _fetch_from_url(propertyId)
+    print(f"response {response}")
     try:
         assert response.status_code == 200
     except AssertionError as err:  #
         print(err)
         sys.exit(err)
-    price, eventDescription = get_price_info(response)
+    eventDescription = get_event_description(response)
+
+    if eventDescription == "Contingent":
+        price = 0
+    else:
+        price = get_price_info(response)
     houseinfo = get_property_details(response)
     taxInfo = get_taxes(response)
     county = get_county(response)
@@ -101,7 +105,6 @@ def fetch_data_with_url(url: str) -> RedFin:
         return RedFin(
             propertyId=propertyId,
             price=price,
-            # mlsDescription=mlsDescription,
             eventDescription=eventDescription,
             taxInfo=taxInfo,
             houseinfo=houseinfo,

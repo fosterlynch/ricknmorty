@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  ricknmorty:
+    image: ricknmorty
+    build:
+      context: .
+      dockerfile: ./Dockerfile

@@ -65,4 +65,32 @@ def create_retry_database():
     print("retry database created")
 
 
-update_tax_database("WA", "Spokane County", 0.012)
+def save_results_to_history_db(url: str) -> None:
+    connection = sqlite3.connect("./databases/taxrates.sqlite")
+    crsr = connection.cursor()
+    crsr.execute(
+        "INSERT INTO history VALUES (?);",
+        (url),
+    )
+
+
+def create_history_db():
+    connection = sqlite3.connect("./databases/history.sqlite")
+    crsr = connection.cursor()
+    table = crsr.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='history';"
+    ).fetchall()
+    if table != []:
+        crsr.execute("DROP TABLE history;")
+    sql_command = """CREATE TABLE history (
+    url VARCHAR(50) PRIMARY KEY
+    ;"""
+    crsr.execute(sql_command)
+    connection.commit()
+    connection.close()
+    print("history database created")
+
+
+if __name__ == "__main__":
+    # update_tax_database("WA", "Spokane County", 0.012)
+    create_history_db()
